@@ -55,21 +55,10 @@ def FindExecutable(candidates : list):
       return e
   return None
 
-DEFAULT_C_COMPILER = FindExecutable([
-  'cl',
-  'clang-cl',
-] if os.name == 'nt' else [
-  'clang',
-  'gcc',
-])
-
-DEFAULT_CPP_COMPILER = FindExecutable([
-  'cl',
-  'clang-cl',
-] if os.name == 'nt' else [
-  'clang++',
-  'g++',
-])
+default_c_compiler = 'Engine/Extras/ThirdPartyNotUE/SDKs/HostLinux/Linux_x64/v22_clang-16.0.6-centos7/x86_64-unknown-linux-gnu/bin/clang'
+default_cpp_compiler = 'Engine/Extras/ThirdPartyNotUE/SDKs/HostLinux/Linux_x64/v22_clang-16.0.6-centos7/x86_64-unknown-linux-gnu/bin/clang++'
+default_linker_path = 'Engine/Extras/ThirdPartyNotUE/SDKs/HostLinux/Linux_x64/v22_clang-16.0.6-centos7/x86_64-unknown-linux-gnu/bin/lld'
+default_ar = 'Engine/Extras/ThirdPartyNotUE/SDKs/HostLinux/Linux_x64/v22_clang-16.0.6-centos7/x86_64-unknown-linux-gnu/bin/llvm-ar'
 
 DEFAULT_LINKER = FindExecutable([
   'link',
@@ -203,19 +192,19 @@ ADDCLIIntOption(
   'Set the target C++ standard.')
 AddCLIStringOption(
   'c-compiler',
-  DEFAULT_C_COMPILER,
+  default_c_compiler,
   'Set the target C compiler.')
 AddCLIStringOption(
   'cpp-compiler',
-  DEFAULT_CPP_COMPILER,
+  default_cpp_compiler,
   'Set the target C++ compiler.')
 AddCLIStringOption(
   'linker',
-  DEFAULT_LINKER,
+  default_linker_path,
   'Set the target linker.')
 AddCLIStringOption(
   'ar',
-  DEFAULT_LIB,
+  default_ar,
   'Set the target ar/lib tool.')
 AddCLIStringOption(
   'version',
@@ -242,13 +231,16 @@ AddCLIStringOption(
 
 ARGS_SYNC_PATH = WORKSPACE_PATH / 'ArgsSync.json'
 
-
 def SyncArgs():
   argv = argparse.Namespace()
   if __name__ == '__main__':
     argv = argp.parse_args()
     with open(ARGS_SYNC_PATH, 'w') as file:
       json.dump(argv.__dict__, file)
+    argv.c_compiler = str(Path(argv.ue_path).resolve() / default_c_compiler)
+    argv.cpp_compiler = str(Path(argv.ue_path).resolve() / default_cpp_compiler)
+    argv.linker = str(Path(argv.ue_path).resolve() / default_linker_path)
+    argv.ar = str(Path(argv.ue_path).resolve() / default_ar)
   else:
     with open(ARGS_SYNC_PATH, 'r') as file:
       argv.__dict__ = json.load(file)
@@ -643,6 +635,12 @@ class Task:
     ]
     if os.name != 'nt':
       cmd.append('-DPOSITION_INDEPENDENT_CODE=ON')
+      C_INCLUDE_PATH = '/home/xsole/programing/UnrealEngine5_carla/Engine/Extras/ThirdPartyNotUE/SDKs/HostLinux/Linux_x64/v22_clang-16.0.6-centos7/x86_64-unknown-linux-gnu/usr/include/'
+      CPP_INCLUDE_PATH = '/home/xsole/programing/UnrealEngine5_carla/Engine/Extras/ThirdPartyNotUE/SDKs/HostLinux/Linux_x64/v22_clang-16.0.6-centos7/x86_64-unknown-linux-gnu/include/c++/4.8.5/'
+      LLVM_OBJECT_PATH = '/home/xsole/programing/UnrealEngine5_carla/Engine/Extras/ThirdPartyNotUE/SDKs/HostLinux/Linux_x64/v22_clang-16.0.6-centos7/x86_64-unknown-linux-gnu/usr/lib'
+      LLVM_LIBPATH = '/home/xsole/programing/UnrealEngine5_carla/Engine/Extras/ThirdPartyNotUE/SDKs/HostLinux/Linux_x64/v22_clang-16.0.6-centos7/x86_64-unknown-linux-gnu/lib64'
+      cmd.append(f'-DCMAKE_CXX_FLAGS=-I{CPP_INCLUDE_PATH} -I{C_INCLUDE_PATH} -L{LLVM_LIBPATH} -L{LLVM_OBJECT_PATH} -B{LLVM_OBJECT_PATH}')
+      cmd.append(f'-DCMAKE_C_FLAGS=-I{C_INCLUDE_PATH} -L{LLVM_LIBPATH} -L{LLVM_OBJECT_PATH} -B{LLVM_OBJECT_PATH}')
     return cmd
 
   def CreateCMakeConfigureDefault(name : str, in_edges : list, source_path : Path, build_path : Path, *args, install_path : Path = None):
@@ -1174,7 +1172,8 @@ def BuildDependencies(task_graph : TaskGraph):
     '-DRPCLIB_BUILD_EXAMPLES=OFF',
     '-DRPCLIB_ENABLE_LOGGING=OFF',
     '-DRPCLIB_ENABLE_COVERAGE=OFF',
-    '-DRPCLIB_MSVC_STATIC_RUNTIME=OFF'))
+    '-DRPCLIB_MSVC_STATIC_RUNTIME=OFF',
+    '-DCMAKE_POSITION_INDEPENDENT_CODE=ON'))
   
   configure_xercesc = task_graph.Add(Task.CreateCMakeConfigureDefault(
     'xercesc-configure',

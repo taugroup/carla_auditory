@@ -20,7 +20,10 @@ include (CheckCXXCompilerFlag)
 
 set (CMAKE_CXX_STANDARD 20)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
+set (CMAKE_POSITION_INDEPENDENT_CODE ON)
 set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set (STD_LINK_FLAGS "-lc++")
+set (BUILD_SHARED_LIBS ON)
 
 option (
     BUILD_LIBCARLA_CLIENT
@@ -207,7 +210,7 @@ if (BUILD_LIBCARLA_SERVER)
     )
 
     add_library (
-        carla-server STATIC
+        carla-server
         ${LIBCARLA_SERVER_HEADERS}
         ${LIBCARLA_SERVER_SOURCES}
         ${LIBCARLA_SERVER_HEADERS_THIRD_PARTY}
@@ -223,6 +226,10 @@ if (BUILD_LIBCARLA_SERVER)
         carla-server PUBLIC
         ${CARLA_COMMON_DEFINITIONS}
     )
+
+    IF (WIN32)
+        target_link_libraries(carla-server PRIVATE ${STD_LINK_FLAGS})
+    ENDIF()
 
     install (TARGETS carla-server DESTINATION lib)
 
@@ -354,7 +361,7 @@ if (BUILD_LIBCARLA_CLIENT)
     )
 
     add_library (
-        carla-client STATIC
+        carla-client
         ${LIBCARLA_CLIENT_HEADERS}
         ${LIBCARLA_CLIENT_SOURCES}
         ${LIBCARLA_CLIENT_HEADERS_THIRD_PARTY}
@@ -370,6 +377,9 @@ if (BUILD_LIBCARLA_CLIENT)
         carla-client PUBLIC
         ${CARLA_COMMON_DEFINITIONS}
     )
+    IF (WIN32)
+        target_link_libraries(carla-client PRIVATE ${STD_LINK_FLAGS})
+    ENDIF()
     
     install (TARGETS carla-client DESTINATION lib)
     
@@ -411,7 +421,7 @@ if (BUILD_OSM_WORLD_RENDERER)
     target_link_libraries (OSMWorldRenderer PRIVATE osmscout_map)
     target_link_libraries (OSMWorldRenderer PRIVATE osmscout_map_svg)
     target_link_libraries (OSMWorldRenderer PRIVATE lunasvg)
-
+    
     target_compile_definitions (
         OSMWorldRenderer PUBLIC
         _USE_MATH_DEFINES
