@@ -116,7 +116,8 @@ public class CarlaTools :
       "StreetMapImporting",
       "StreetMapRuntime",
             "Chaos",
-            "ChaosVehicles"
+            "ChaosVehicles",
+      "GeoReferencing"
     });
 
     if (EnableHoudini)
