@@ -107,7 +107,7 @@ void ATagger::TagActor(const AActor &Actor, bool bTagForSemanticSegmentation)
 #endif // CARLA_TAGGER_EXTRA_LOG
 
   // Iterate static meshes.
-  TArray<UStaticMeshComponent *> StaticMeshComponents;
+  TArray<UStaticMeshComponent*> StaticMeshComponents;
   Actor.GetComponents<UStaticMeshComponent>(StaticMeshComponents);
   for (UStaticMeshComponent *Component : StaticMeshComponents) {
     auto Label = GetLabelByPath(Component->GetStaticMesh());
@@ -128,7 +128,7 @@ void ATagger::TagActor(const AActor &Actor, bool bTagForSemanticSegmentation)
     }
 
     // Find a tagged component that is attached to this component
-    UTaggedComponent *TaggedComponent = NULL;
+    UTaggedComponent* TaggedComponent = NULL;
     TArray<USceneComponent *> AttachedComponents = Component->GetAttachChildren();
     for (USceneComponent *SceneComponent : AttachedComponents) {
       UTaggedComponent *TaggedSceneComponent = Cast<UTaggedComponent>(SceneComponent);
@@ -144,6 +144,7 @@ void ATagger::TagActor(const AActor &Actor, bool bTagForSemanticSegmentation)
     // If not found, then create new tagged component and attach it to this component
     if (!TaggedComponent) {
       TaggedComponent = NewObject<UTaggedComponent>(Component);
+      TaggedComponent->DetailMode = EDetailMode::DM_Epic;
       TaggedComponent->SetupAttachment(Component);
       TaggedComponent->RegisterComponent();
 #ifdef CARLA_TAGGER_EXTRA_LOG
@@ -158,6 +159,7 @@ void ATagger::TagActor(const AActor &Actor, bool bTagForSemanticSegmentation)
 #endif // CARLA_TAGGER_EXTRA_LOG
 
     TaggedComponent->SetColor(Color);
+    TaggedComponent->DetailMode = EDetailMode::DM_Epic;
     TaggedComponent->MarkRenderStateDirty();
   }
 

@@ -68,7 +68,7 @@ FBoxSphereBounds UTaggedComponent::CalcBounds(const FTransform & LocalToWorld) c
 
 FPrimitiveSceneProxy * UTaggedComponent::CreateSceneProxy()
 {
-  USceneComponent * ParentComponent = GetAttachParent();
+  USceneComponent* ParentComponent = GetAttachParent();
 
   if (!IsValid(ParentComponent))
   {
@@ -108,7 +108,7 @@ FPrimitiveSceneProxy * UTaggedComponent::CreateSceneProxy()
 FPrimitiveSceneProxy * UTaggedComponent::CreateSceneProxy(UStaticMeshComponent * StaticMeshComponent)
 {
   // Make sure static mesh has render data
-  UStaticMesh * StaticMesh = StaticMeshComponent->GetStaticMesh();
+  UStaticMesh* StaticMesh = StaticMeshComponent->GetStaticMesh();
 
   if (StaticMesh == NULL)
   {
@@ -129,7 +129,7 @@ FPrimitiveSceneProxy * UTaggedComponent::CreateSceneProxy(UStaticMeshComponent *
     return NULL;
   }
 
-  return new FTaggedStaticMeshSceneProxy(StaticMeshComponent, true, TaggedMID);
+  return new FTaggedStaticMeshSceneProxy(StaticMeshComponent, false, TaggedMID);
 }
 
 FPrimitiveSceneProxy * UTaggedComponent::CreateSceneProxy(USkeletalMeshComponent * SkeletalMeshComponent)
