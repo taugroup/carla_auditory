@@ -201,6 +201,7 @@ void ATagger::TagActor(const AActor &Actor, bool bTagForSemanticSegmentation)
     // If not found, then create new tagged component and attach it to this component
     if (!TaggedComponent) {
       TaggedComponent = NewObject<UTaggedComponent>(Component);
+      TaggedComponent->DetailMode = EDetailMode::DM_Epic;
       TaggedComponent->SetupAttachment(Component);
       TaggedComponent->RegisterComponent();
 #ifdef CARLA_TAGGER_EXTRA_LOG
@@ -215,6 +216,7 @@ void ATagger::TagActor(const AActor &Actor, bool bTagForSemanticSegmentation)
 #endif // CARLA_TAGGER_EXTRA_LOG
 
     TaggedComponent->SetColor(Color);
+    TaggedComponent->DetailMode = EDetailMode::DM_Epic;
     TaggedComponent->MarkRenderStateDirty();
     TaggedComponent->SetComponentTickEnabled(true);
 
