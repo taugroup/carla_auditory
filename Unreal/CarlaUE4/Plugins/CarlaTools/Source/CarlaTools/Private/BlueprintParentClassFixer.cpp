@@ -86,15 +86,21 @@ void ABlueprintParentClassFixer::FixBlueprints()
       switch (ClassToFix)
       {
         case EFixClass::BLUEPRINT:
+        {
           ClassPrefix = "Blueprint'";
           FixedPath.InsertAt(0, "Blueprint'/Game/");
-
-        break;
-
+          break;
+        }
         case EFixClass::ANIMBLUEPRINT:
+        {
           ClassPrefix = "AnimBlueprint'";
           FixedPath.InsertAt(0, "AnimBlueprint'/Game/");
-        break;
+          break;
+        }
+        default:
+        {
+          break;
+        }
       }
 
       //We make sure to remove the uasset extension.
@@ -125,7 +131,7 @@ void ABlueprintParentClassFixer::FixBlueprints()
             switch (ClassToFix)
             {
               case EFixClass::BLUEPRINT:
-
+              {
                 if (IsValid(BP))
                 {
                   BP = Cast<UBlueprint>(Obj);
@@ -143,10 +149,10 @@ void ABlueprintParentClassFixer::FixBlueprints()
                   UE_LOG(LogTemp, Warning, TEXT("Blueprint was not valid"));
                 }
 
-              break;
-
+                break;
+              }
               case EFixClass::ANIMBLUEPRINT:
-
+              {
                 if (IsValid(AnimBP))
                 {
                   AnimBP = Cast<UAnimBlueprint>(Obj);
@@ -163,9 +169,13 @@ void ABlueprintParentClassFixer::FixBlueprints()
                 {
                   UE_LOG(LogTemp, Warning, TEXT("AnimBlueprint was not valid"));
                 }
-              break;
+                break;
+              }
+              default:
+              {
+                break;
+              }
             }
-
             break;
           }
         }
