@@ -208,7 +208,7 @@ if (BUILD_CARLA_CLIENT)
         ${LIBCARLA_SOURCE_PATH}/carla/trafficmanager/*.h
         ${LIBCARLA_SOURCE_PATH}/compiler/*.h
     )
-    
+    add_subdirectory(extensions/Ros2Native)
     if (ENABLE_ROS2)
       file (
         GLOB
