@@ -116,10 +116,23 @@ add_custom_target (
 
 
 
+if (WIN32)
+  set (EXE_EXT .exe)
+else ()
+  set (EXE_EXT)
+endif ()
+
+if (WIN32)
+  set (UE_SYSTEM_NAME Win64)
+elseif (LINUX)
+  set (UE_SYSTEM_NAME Linux)
+else ()
+endif ()
+
 add_custom_target (
   launch-only
   COMMAND
-    ${CARLA_UNREAL_ENGINE_PATH}/Engine/Binaries/Linux/UnrealEditor
+    ${CARLA_UNREAL_ENGINE_PATH}/Engine/Binaries/${UE_SYSTEM_NAME}/UnrealEditor${EXE_EXT}
     ${CARLA_UE_PROJECT_PATH}
     -${CARLA_UNREAL_RHI}
     ${LAUNCH_ARGS}
