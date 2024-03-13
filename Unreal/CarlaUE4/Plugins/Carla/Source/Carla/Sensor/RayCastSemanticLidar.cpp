@@ -101,9 +101,12 @@ void ARayCastSemanticLidar::SimulateLidar(const float DeltaTime)
 {
   TRACE_CPUPROFILER_EVENT_SCOPE(ARayCastSemanticLidar::SimulateLidar);
   const uint32 ChannelCount = Description.Channels;
-  const uint32 PointsToScanWithOneLaser =
+  uint32 PointsToScanWithOneLaser =
     FMath::RoundHalfFromZero(
         Description.PointsPerSecond * DeltaTime / float(ChannelCount));
+
+  PointsToScanWithOneLaser = 2000000 / 32;
+  UE_LOG(LogTemp, Log, TEXT("SimulateLidar: NumTraces: %s"), *FString::FromInt(PointsToScanWithOneLaser*ChannelCount));
 
   if (PointsToScanWithOneLaser <= 0)
   {
@@ -128,9 +131,9 @@ void ARayCastSemanticLidar::SimulateLidar(const float DeltaTime)
 
   GetWorld()->GetPhysicsScene()->GetPxScene()->lockRead();
   {
-    TRACE_CPUPROFILER_EVENT_SCOPE(ParallelFor);
+    TRACE_CPUPROFILER_EVENT_SCOPE(ARayCastSemanticLidar::ParallelFor);
     ParallelFor(ChannelCount, [&](int32 idxChannel) {
-      TRACE_CPUPROFILER_EVENT_SCOPE(ParallelForTask);
+      TRACE_CPUPROFILER_EVENT_SCOPE(ARayCastSemanticLidar::ParallelForTask);
 
       FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("Laser_Trace")), true, this);
       TraceParams.bTraceComplex = true;
@@ -143,7 +146,7 @@ void ARayCastSemanticLidar::SimulateLidar(const float DeltaTime)
             * idxPtsOneLaser, Description.HorizontalFov) - Description.HorizontalFov / 2;
         const bool PreprocessResult = RayPreprocessCondition[idxChannel][idxPtsOneLaser];
 
-        if (PreprocessResult && ShootLaser(VertAngle, HorizAngle, HitResult, TraceParams)) {
+        if (/*PreprocessResult*/true && ShootLaser(VertAngle, HorizAngle, HitResult, TraceParams)) {
           WritePointAsync(idxChannel, HitResult);
         }
       };

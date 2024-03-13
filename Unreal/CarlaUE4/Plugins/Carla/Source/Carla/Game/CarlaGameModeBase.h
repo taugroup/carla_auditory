@@ -30,6 +30,8 @@
 
 #include "CarlaGameModeBase.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEpisodeInitialisedDelegate, UCarlaEpisode*, InitialisedEpisode);
+
 /// Base class for the CARLA Game Mode.
 UCLASS(HideCategories=(ActorTick))
 class CARLA_API ACarlaGameModeBase : public AGameModeBase
@@ -111,6 +113,8 @@ public:
       const carla::rpc::MaterialParameter& TextureParam);
 
   TArray<FString> GetNamesOfAllActors();
+
+  FOnEpisodeInitialisedDelegate OnEpisodeInitialisedDelegate;
 
   // Gravitational acceleration. Default is earth one, which is approximately 9.81 m/s^2
   UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Sensor Gravity")
