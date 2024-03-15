@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "{503B4C24-4B4B-4C8C-53F3-8AB2AC13D07B}",
+	"EngineAssociation": "{F9D7AD51-4721-CC5E-6296-A491423E415C}",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -157,11 +157,17 @@
 			"SupportedTargetPlatforms": [
 				"IOS",
 				"Win64",
-				"Mac"
+				"Mac",
+				"Linux",
+				"Android"
 			]
 		},
 		{
 			"Name": "MovieRenderPipeline",
+			"Enabled": true
+		},
+		{
+			"Name": "Volumetrics",
 			"Enabled": true
 		}
 	]
