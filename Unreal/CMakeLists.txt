@@ -89,7 +89,6 @@ set (
   carla-server
   libsqlite3
   Boost::asio
-  Boost::python
   Boost::geometry
   Boost::gil
   Eigen3::Eigen
@@ -104,6 +103,7 @@ if (BUILD_CARLA_CLIENT)
   list (APPEND UE_DEPENDENCIES_ORDER_ONLY carla-client)
 endif ()
 if (BUILD_PYTHON_API)
+  list (APPEND UE_DEPENDENCIES_ORDER_ONLY Boost::python)
   list (APPEND UE_DEPENDENCIES_ORDER_ONLY carla-python-api)
 endif ()
 
