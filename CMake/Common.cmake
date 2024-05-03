@@ -1,6 +1,7 @@
 # ================================
 #   Common
 # ================================
+set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set (CMAKE_CXX_STANDARD 20)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -33,6 +34,22 @@ if (WIN32)
   endif ()
 endif ()
 
+if (WIN32)
+  set (EXE_EXT .exe)
+  set (LIB_EXT .lib)
+  set (DLL_EXT .dll)
+elseif (LINUX)
+  set (EXE_EXT)
+  set (LIB_EXT .a)
+  set (DLL_EXT .so)
+elseif (APPLE)
+  set (EXE_EXT)
+  set (LIB_EXT .a)
+  set (DLL_EXT .so)
+else ()
+  carla_error ("Unknown target system.")
+endif ()
+
 # ================================
 #   Common Definitions
 # ================================
@@ -60,15 +77,63 @@ endif ()
 #   Exception Definitions
 # ================================
 
+set (CARLA_EXCEPTION_OPTIONS)
 set (CARLA_EXCEPTION_DEFINITIONS)
 
 if (ENABLE_EXCEPTIONS)
-  # Nothing
+  if (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+      check_cxx_compiler_flag(-fexceptions HAS_fexceptions)
+      if (HAS_fexceptions)
+        list (APPEND CARLA_EXCEPTION_OPTIONS -fexceptions)
+      endif ()
+    else ()
+      check_cxx_compiler_flag(/EHa HAS_EHa)
+      if (HAS_EHa)
+        list (APPEND CARLA_EXCEPTION_OPTIONS /EHa)
+      endif ()
+    endif ()
+  else ()
+    check_cxx_compiler_flag(-fexceptions HAS_fexceptions)
+    if (HAS_fexceptions)
+      list (APPEND CARLA_EXCEPTION_OPTIONS -fexceptions)
+    endif ()
+  endif ()
 else ()
-  list (APPEND CARLA_EXCEPTION_DEFINITIONS ASIO_NO_EXCEPTIONS)
-  list (APPEND CARLA_EXCEPTION_DEFINITIONS BOOST_NO_EXCEPTIONS)
-  list (APPEND CARLA_EXCEPTION_DEFINITIONS LIBCARLA_NO_EXCEPTIONS)
-  list (APPEND CARLA_EXCEPTION_DEFINITIONS PUGIXML_NO_EXCEPTIONS)
+  if (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+      check_cxx_compiler_flag(-fno-exceptions HAS_fnoexceptions)
+      if (HAS_fnoexceptions)
+        list (APPEND CARLA_EXCEPTION_OPTIONS -fno-exceptions)
+      endif ()
+    else ()
+      check_cxx_compiler_flag(/EHsc HAS_EHsc)
+      if (HAS_EHsc)
+        list (APPEND CARLA_EXCEPTION_OPTIONS /EHsc)
+      endif ()
+    endif ()
+  else ()
+    check_cxx_compiler_flag(-fno-exceptions HAS_fnoexceptions)
+    if (HAS_fnoexceptions)
+      list (APPEND CARLA_EXCEPTION_OPTIONS -fno-exceptions)
+    endif ()
+  endif ()
+
+  list (
+    APPEND
+    CARLA_EXCEPTION_DEFINITIONS
+  )
+
+  list (
+    APPEND
+    CARLA_EXCEPTION_DEFINITIONS
+
+    ASIO_NO_EXCEPTIONS
+    BOOST_NO_EXCEPTIONS
+    BOOST_EXCEPTION_DISABLE
+    PUGIXML_NO_EXCEPTIONS
+    LIBCARLA_NO_EXCEPTIONS
+  )
 endif ()
 
 # ================================
@@ -76,11 +141,54 @@ endif ()
 # ================================
 
 set (CARLA_RTTI_DEFINITIONS)
+set (CARLA_RTTI_OPTIONS)
 
-if (CARLA_RTTI_DEFINITIONS)
-  # Nothing
+if (ENABLE_RTTI)
+  if (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+      check_cxx_compiler_flag(-frtti HAS_frtti)
+      if (HAS_frtti)
+        list (APPEND CARLA_RTTI_OPTIONS -frtti)
+      endif ()
+    else ()
+      check_cxx_compiler_flag(/GR HAS_GR)
+      if (HAS_GR)
+        list (APPEND CARLA_RTTI_OPTIONS /GR)
+      endif ()
+    endif ()
+  else ()
+    check_cxx_compiler_flag(-frtti HAS_frtti)
+    if (HAS_frtti)
+      list (APPEND CARLA_RTTI_OPTIONS -frtti)
+    endif ()
+  endif ()
 else ()
-  list (APPEND CARLA_RTTI_DEFINITIONS BOOST_TYPE_INDEX_FORCE_NO_RTTI_COMPATIBILITY)
+  if (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+      check_cxx_compiler_flag(-fno-rtti HAS_fnortti)
+      if (HAS_fnortti)
+        list (APPEND CARLA_RTTI_OPTIONS -fno-rtti)
+      endif ()
+    else ()
+      check_cxx_compiler_flag(/GR HAS_GRm)
+      if (HAS_GRm)
+        list (APPEND CARLA_RTTI_OPTIONS /GR-)
+      endif ()
+    endif ()
+  else ()
+    check_cxx_compiler_flag(-fno-rtti HAS_fnortti)
+    if (HAS_fnortti)
+      list (APPEND CARLA_RTTI_OPTIONS -fno-rtti)
+    endif ()
+  endif ()
+
+  list (
+    APPEND
+    CARLA_RTTI_DEFINITIONS
+    BOOST_NO_RTTI
+    BOOST_NO_TYPEID
+    BOOST_TYPE_INDEX_FORCE_NO_RTTI_COMPATIBILITY
+  )
 endif ()
 
 # ================================
