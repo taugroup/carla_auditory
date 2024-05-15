@@ -250,3 +250,35 @@ if (BUILD_CARLA_UNREAL)
 endif ()
 
 carla_dependencies_make_available ()
+
+# ==== NVIDIA OPTIX ====
+
+if (ENABLE_NVIDIA_OPTIX)
+
+  if (NOT IS_DIRECTORY "${CARLA_NVIDIA_OPTIX_SDK_PATH}")
+    carla_error (
+      "ENABLE_NVIDIA_OPTIX is set to ON, but CARLA_NVIDIA_OPTIX_SDK_PATH does not point to a valid directory."
+    )
+  else ()
+    carla_message (
+      "Using \"${CARLA_NVIDIA_OPTIX_SDK_PATH}\" as the NVIDIA OptiX SDK path."
+    )
+  endif ()
+
+  list (
+    APPEND
+    CMAKE_MODULE_PATH
+    ${CARLA_NVIDIA_OPTIX_SDK_PATH}/SDK/CMake
+  )
+
+  set (
+    NVIDIA_OPTIX_INCLUDE_PATH
+    ${CARLA_NVIDIA_OPTIX_SDK_PATH}/include
+  )
+
+  find_package (
+    CUDAToolkit
+    REQUIRED
+  )
+
+endif ()

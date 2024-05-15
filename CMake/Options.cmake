@@ -128,6 +128,12 @@ carla_string_option (
   "png"
 )
 
+carla_option (
+  ENABLE_NVIDIA_OPTIX
+  "Whether to enable NVIDIA OptiX based subprojects."
+  ON
+)
+
 
 
 # ================================
@@ -360,7 +366,6 @@ carla_string_option (
   ${CARLA_LIBOSMSCOUT_VERSION}
 )
 
-
 # ==== STREETMAP ====
 
 carla_string_option (
@@ -373,4 +378,18 @@ carla_string_option (
   CARLA_STREETMAP_TAG
   "Target StreetMap git tag."
   ${CARLA_STREETMAP_VERSION}
+)
+
+# ==== NVIDIA OPTIX ====
+
+carla_string_option (
+  CARLA_NVIDIA_OPTIX_VERSION
+  "Target NVIDIA OptiX version."
+  8.0.0
+)
+
+carla_string_option (
+  CARLA_NVIDIA_OPTIX_SDK_PATH
+  "Path to the NVIDIA OptiX SDK."
+  ""
 )
