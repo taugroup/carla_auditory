@@ -391,5 +391,5 @@ carla_string_option (
 carla_string_option (
   CARLA_NVIDIA_OPTIX_SDK_PATH
   "Path to the NVIDIA OptiX SDK."
-  ""
+  "$ENV{CARLA_NVIDIA_OPTIX_SDK_PATH}"
 )

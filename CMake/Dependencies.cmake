@@ -257,7 +257,7 @@ if (ENABLE_NVIDIA_OPTIX)
 
   if (NOT IS_DIRECTORY "${CARLA_NVIDIA_OPTIX_SDK_PATH}")
     carla_error (
-      "ENABLE_NVIDIA_OPTIX is set to ON, but CARLA_NVIDIA_OPTIX_SDK_PATH does not point to a valid directory."
+      "ENABLE_NVIDIA_OPTIX is set to ON, but CARLA_NVIDIA_OPTIX_SDK_PATH (\"${CARLA_NVIDIA_OPTIX_SDK_PATH}\") does not point to a valid directory."
     )
   else ()
     carla_message (

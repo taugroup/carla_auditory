@@ -37,7 +37,7 @@ function (carla_get_option_docs OUT_VAR)
   return (PROPAGATE ${OUT_VAR})
 endfunction ()
 
-macro (carla_option NAME DESCRIPTION VALUE)
+function (carla_option NAME DESCRIPTION VALUE)
   option (${NAME} ${DESCRIPTION} ${VALUE})
   carla_message ("(option) ${NAME} : ${VALUE}")
   get_property (DOCS GLOBAL PROPERTY CARLA_OPTION_DOCS)
@@ -49,12 +49,12 @@ macro (carla_option NAME DESCRIPTION VALUE)
     "\t- Default: ${VALUE}\n"
   )
   set_property (GLOBAL PROPERTY CARLA_OPTION_DOCS ${DOCS})
-endmacro ()
+endfunction ()
 
 
 
-macro (carla_string_option NAME DESCRIPTION VALUE)
-  set (${NAME} "${VALUE}")
+function (carla_string_option NAME DESCRIPTION VALUE)
+  set (${NAME} "${VALUE}" CACHE STRING "${DESCRIPTION}")
   carla_message ("(option) ${NAME} : \"${VALUE}\"")
   get_property (DOCS GLOBAL PROPERTY CARLA_OPTION_DOCS)
   string (
@@ -65,7 +65,7 @@ macro (carla_string_option NAME DESCRIPTION VALUE)
     "\t- Default: \"${VALUE}\"\n"
   )
   set_property (GLOBAL PROPERTY CARLA_OPTION_DOCS ${DOCS})
-endmacro ()
+endfunction ()
 
 
 

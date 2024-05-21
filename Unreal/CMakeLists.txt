@@ -107,67 +107,101 @@ endif ()
 
 
 
-set (
-  CARLA_UNREAL_INCLUDE_PATHS_FILE_PATH
-  ${CMAKE_CURRENT_BINARY_DIR}/Includes.inc
+define_property (
+  TARGET
+  PROPERTY
+    UE_SOURCE_DIR
+  BRIEF_DOCS
+    "Target property that holds the root source path of a CARLA UE subproject."
 )
 
-set (
-  CARLA_UNREAL_LIBRARIES_PATHS_FILE_PATH
-  ${CMAKE_CURRENT_BINARY_DIR}/Libraries.inc
-)
 
-set (
-  CARLA_UNREAL_OPTIONS_PATHS_FILE_PATH
-  ${CMAKE_CURRENT_BINARY_DIR}/Options.inc
-)
 
-set (
-  CARLA_UNREAL_INCLUDE_PATHS
-  ${sqlite3_SOURCE_DIR}
-)
+set (CARLA_DEFINED_UE_PROPERTIES)
 
-foreach (UE_DEP ${UE_DEPENDENCIES})
+macro (carla_define_ue_property
+  VARIABLE_NAME_UE)
+
   list (
     APPEND
-    CARLA_UNREAL_INCLUDE_PATHS
-    "$<TARGET_PROPERTY:${UE_DEP},INTERFACE_INCLUDE_DIRECTORIES>"
+    CARLA_DEFINED_UE_PROPERTIES
+    ${VARIABLE_NAME_UE}
   )
-endforeach ()
 
-set (
-  CARLA_UNREAL_LIBRARIES
-  $<TARGET_FILE:libsqlite3>
-)
+  define_property (
+    TARGET
+    PROPERTY
+      UE_PROPERTY_${VARIABLE_NAME_UE}
+    BRIEF_DOCS
+      "Target property meant to mirror UBT's ${UE_VARIABLE_NAME}"
+  )
 
-foreach (UE_DEP ${UE_DEPENDENCIES})
-  get_target_property (UE_DEP_TYPE ${UE_DEP} TYPE)
-  if (NOT ("${UE_DEP_TYPE}" STREQUAL "INTERFACE_LIBRARY"))
-    list (
-      APPEND
-      CARLA_UNREAL_LIBRARIES
-      "$<TARGET_FILE:${UE_DEP}>"
+  function (carla_get_ue_${VARIABLE_NAME_UE} OUT_VAR TARGET)
+    get_target_property (
+      TEMP
+      ${TARGET}
+      UE_PROPERTY_${VARIABLE_NAME_UE}
     )
-  endif ()
-endforeach ()
+    set (${OUT_VAR} ${TEMP})
+    return (PROPAGATE ${OUT_VAR})
+  endfunction ()
+  
+  function (carla_save_ue_${VARIABLE_NAME_UE} TARGET)
+    get_target_property (
+      TEMP
+      ${TARGET}
+      UE_PROPERTY_${VARIABLE_NAME_UE}
+    )
+    if (TEMP)
+      get_target_property (
+        UE_SOURCE_DIR_VALUE
+        ${TARGET}
+        UE_SOURCE_DIR
+      )
+      if (NOT IS_DIRECTORY "${UE_SOURCE_DIR_VALUE}")
+        carla_error ("Missing UE_SOURCE_DIR target property in ${TARGET}.")
+      endif ()
+      file (
+        GENERATE
+        OUTPUT
+          ${UE_SOURCE_DIR_VALUE}/${TARGET}-${VARIABLE_NAME_UE}.txt
+        CONTENT
+          "${TEMP}"
+      )
+    endif ()
+  endfunction ()
+  
+  function (carla_add_ue_${VARIABLE_NAME_UE} TARGET)
+    get_target_property (
+      TEMP
+      ${TARGET}
+      UE_PROPERTY_${VARIABLE_NAME_UE}
+    )
+    if (TEMP)
+      list (
+        APPEND
+        TEMP
+        ${ARGN}
+      )
+    endif ()
+    set_target_properties (
+      ${TARGET}
+      PROPERTIES
+        UE_PROPERTY_${VARIABLE_NAME_UE} ${TEMP}
+    )
+  endfunction ()
 
-set (UNREAL_PROJECT_OPTIONS)
+endmacro ()
 
-if (ENABLE_ROS2)
-  list (
-    APPEND
-    CARLA_UNREAL_OPTIONS
-    "ROS2"
-  )
-endif()
-
-if (ENABLE_OSM2ODR)
-  list (
-    APPEND
-    CARLA_UNREAL_OPTIONS
-    "OSM2ODR"
-  )
-endif()
+macro (carla_generate_ue_property_files TARGET)
+  foreach (UE_PROPERTY ${CARLA_DEFINED_UE_PROPERTIES})
+    cmake_language (
+      CALL
+      carla_save_ue_${UE_PROPERTY}
+      ${TARGET}
+    )
+  endforeach ()
+endmacro ()
 
 
 
@@ -229,69 +263,14 @@ endif ()
 
 
 
-set (
-  CARLA_UNREAL_CONFIGURE_OUTPUTS
-    ${CARLA_UNREAL_INCLUDE_PATHS_FILE_PATH}
-    ${CARLA_UE_CARLA_PATH}/Includes.def
-    ${CARLA_UE_CARLA_TOOLS_PATH}/Includes.def
-    ${CARLA_UNREAL_LIBRARIES_PATHS_FILE_PATH}
-    ${CARLA_UE_CARLA_PATH}/Libraries.def
-    ${CARLA_UE_CARLA_TOOLS_PATH}/Libraries.def
-    ${CARLA_UNREAL_OPTIONS_PATHS_FILE_PATH}
-    ${CARLA_UE_CARLA_PATH}/Options.def
-    ${CARLA_UE_CARLA_TOOLS_PATH}/Options.def
+carla_add_custom_target (
+  carla-ue-carla-plugin-configure
+  "Configure the Carla plugin subproject."
 )
 
-
-
-file (
-  GENERATE
-  OUTPUT
-    ${CARLA_UNREAL_INCLUDE_PATHS_FILE_PATH}
-  CONTENT
-    "${CARLA_UNREAL_INCLUDE_PATHS}"
-)
-
-file (
-  GENERATE
-  OUTPUT
-    ${CARLA_UNREAL_LIBRARIES_PATHS_FILE_PATH}
-  CONTENT
-    "${CARLA_UNREAL_LIBRARIES}"
-)
-
-file (
-  GENERATE
-  OUTPUT
-    ${CARLA_UNREAL_OPTIONS_PATHS_FILE_PATH}
-  CONTENT
-    "${CARLA_UNREAL_OPTIONS}"
-)
-
-add_custom_command (
-  OUTPUT
-    ${CARLA_UNREAL_CONFIGURE_OUTPUTS}
-  COMMAND ${CMAKE_COMMAND} ARGS -E create_symlink ${CARLA_UNREAL_INCLUDE_PATHS_FILE_PATH} ${CARLA_UE_CARLA_PATH}/Includes.def
-  COMMAND ${CMAKE_COMMAND} ARGS -E create_symlink ${CARLA_UNREAL_INCLUDE_PATHS_FILE_PATH} ${CARLA_UE_CARLA_TOOLS_PATH}/Includes.def
-  COMMAND ${CMAKE_COMMAND} ARGS -E create_symlink ${CARLA_UNREAL_LIBRARIES_PATHS_FILE_PATH} ${CARLA_UE_CARLA_PATH}/Libraries.def
-  COMMAND ${CMAKE_COMMAND} ARGS -E create_symlink ${CARLA_UNREAL_LIBRARIES_PATHS_FILE_PATH} ${CARLA_UE_CARLA_TOOLS_PATH}/Libraries.def
-  COMMAND ${CMAKE_COMMAND} ARGS -E create_symlink ${CARLA_UNREAL_OPTIONS_PATHS_FILE_PATH} ${CARLA_UE_CARLA_PATH}/Options.def
-  COMMAND ${CMAKE_COMMAND} ARGS -E create_symlink ${CARLA_UNREAL_OPTIONS_PATHS_FILE_PATH} ${CARLA_UE_CARLA_TOOLS_PATH}/Options.def
-  USES_TERMINAL
-  VERBATIM
-)
-
-add_custom_target (
-  carla-unreal-configure
-  DEPENDS
-    ${CARLA_UNREAL_CONFIGURE_OUTPUTS}
-)
-
-
-
-file (
-  MAKE_DIRECTORY
-  ${CARLA_UE_PATH}/Content/Carla/ExportedMaps
+carla_add_custom_target (
+  carla-ue-carla-tools-plugin-configure
+  "Configure the Carla plugin subproject."
 )
 
 
@@ -313,10 +292,58 @@ carla_add_custom_target (
   VERBATIM
 )
 
-add_dependencies (
+set_target_properties (
   carla-unreal
-  ${UE_DEPENDENCIES_ORDER_ONLY}
+  PROPERTIES
+    UE_SOURCE_DIR
+    ${CARLA_UE_PLUGINS_PATH}
 )
+
+carla_define_ue_property (PublicDefinitions)
+carla_define_ue_property (PrivateDefinitions)
+carla_define_ue_property (PublicIncludePaths)
+carla_define_ue_property (PrivateIncludePaths)
+carla_define_ue_property (PublicDependencyModuleNames)
+carla_define_ue_property (PrivateDependencyModuleNames)
+carla_define_ue_property (PublicAdditionalLibraries)
+carla_define_ue_property (PrivateAdditionalLibraries)
+carla_define_ue_property (DynamicallyLoadedModuleNames)
+
+carla_add_ue_PrivateIncludePaths (
+  carla-unreal
+  ${sqlite3_SOURCE_DIR}
+)
+
+foreach (UE_DEP ${UE_DEPENDENCIES})
+  carla_add_ue_PrivateIncludePaths (
+    carla-unreal
+    $<TARGET_PROPERTY:${UE_DEP},INTERFACE_INCLUDE_DIRECTORIES>
+  )
+endforeach ()
+
+carla_add_ue_PublicAdditionalLibraries (
+  carla-unreal
+  $<TARGET_FILE:libsqlite3>
+)
+
+foreach (UE_DEP ${UE_DEPENDENCIES})
+  get_target_property (UE_DEP_TYPE ${UE_DEP} TYPE)
+  if (NOT ("${UE_DEP_TYPE}" STREQUAL "INTERFACE_LIBRARY"))
+    carla_add_ue_PublicAdditionalLibraries (carla-unreal $<TARGET_FILE:${UE_DEP}>)
+  endif ()
+endforeach ()
+
+carla_add_ue_PrivateDefinitions (
+  carla-unreal
+  WITH_ROS2
+)
+
+carla_add_ue_PrivateDefinitions (
+  carla-unreal
+  WITH_OSM2ODR
+)
+
+carla_generate_ue_property_files (carla-unreal)
 
 carla_add_custom_target (
   carla-unreal-editor
@@ -329,8 +356,6 @@ carla_add_custom_target (
     -project=${CARLA_UE_PROJECT_PATH}
     -game
     -buildscw
-  DEPENDS
-    ${CARLA_UNREAL_CONFIGURE_OUTPUTS}
   USES_TERMINAL
   VERBATIM
 )
@@ -340,10 +365,15 @@ add_dependencies (
   ${UE_DEPENDENCIES_ORDER_ONLY}
 )
 
-function (add_carla_ue_package_target PACKAGE_CONFIGURATION UE_BUILD_CONFIGURATION)
+function (
+  add_carla_ue_package_target
+  PACKAGE_CONFIGURATION
+  UE_BUILD_CONFIGURATION)
+
   if (NOT "${PACKAGE_CONFIGURATION}" STREQUAL "")
     set (TARGET_NAME_SUFFIX -${PACKAGE_CONFIGURATION})
   endif ()
+
   carla_add_custom_target (
     carla-unreal-package${TARGET_NAME_SUFFIX}
     "Create a CARLA package in ${PACKAGE_CONFIGURATION} mode."
@@ -372,15 +402,15 @@ function (add_carla_ue_package_target PACKAGE_CONFIGURATION UE_BUILD_CONFIGURATI
       -prereqs
       -build
       -archivedirectory=${CARLA_PACKAGE_PATH}
-    DEPENDS
-      ${CARLA_UNREAL_CONFIGURE_OUTPUTS}
-      USES_TERMINAL
-      VERBATIM
-    )
+    USES_TERMINAL
+    VERBATIM
+  )
 
   set (CARLA_TARGET_PACKAGE_PATH ${CARLA_PACKAGE_PATH}/${UE_SYSTEM_NAME})
+
   add_custom_command (
-    TARGET carla-unreal-package${TARGET_NAME_SUFFIX}
+    TARGET
+      carla-unreal-package${TARGET_NAME_SUFFIX}
     POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E echo "********** PACKAGE CREATING VERSION FILE UNREAL PACKAGE EXTRA FILES STARTED **********"
     COMMAND ${CMAKE_COMMAND}
@@ -427,6 +457,7 @@ function (add_carla_ue_package_target PACKAGE_CONFIGURATION UE_BUILD_CONFIGURATI
     package${TARGET_NAME_SUFFIX}
     carla-unreal-package${TARGET_NAME_SUFFIX}
   )
+
 endfunction()
 
 # Docs for UE5 build configurations:
@@ -514,3 +545,7 @@ set_property (
   "${CARLA_BUILD_PATH}/PythonAPI/dist"
 )
 
+file (
+  MAKE_DIRECTORY
+  ${CARLA_UE_PATH}/Content/Carla/ExportedMaps
+)
