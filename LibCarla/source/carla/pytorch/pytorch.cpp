@@ -2,8 +2,6 @@
 // This work is licensed under the terms of the MIT license.
 // For a copy, see <https://opensource.org/licenses/MIT>.
 
-#define _GLIBCXX_USE_CXX11_ABI 0
-
 #include "pytorch.h"
 
 #include <torch/torch.h>
