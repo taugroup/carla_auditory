@@ -42,7 +42,27 @@ then
     sudo apt-get install retry
 fi
 retry --until=success --times=12 --delay=300 -- sudo apt-get update
-retry --until=success --times=12 --delay=300 -- sudo apt-get install build-essential make ninja-build libvulkan1 python3 python3-dev python3-pip libpng-dev libtiff5-dev libjpeg-dev tzdata sed curl libtool rsync libxml2-dev git git-lfs
+retry --until=success --times=12 --delay=300 -- sudo apt-get -y install \
+    build-essential \
+    g++-12 \
+    gcc-12 \
+    make \
+    ninja-build \
+    libvulkan1 \
+    python3 \
+    python3-dev \
+    python3-pip \
+    libpng-dev \
+    libtiff5-dev \
+    libjpeg-dev \
+    tzdata \
+    sed \
+    curl \
+    libtool \
+    rsync \
+    libxml2-dev \
+    git \
+    git-lfs
 echo "Ubuntu Pacakges Installed..."
 
 echo "Installing Python Pacakges..."
@@ -92,7 +112,18 @@ else
     echo "CARLA UnrealEngine5 Installed..."
 fi
 pushd ..
-pushd UnrealEngine5_carla
+pushd $CARLA_UNREAL_ENGINE_PATH
+echo Checking if UnreaEngine5 is in the last commit...
+git fetch
+if [[ $(git status) =~ "up to date" ]]; then
+    echo UnreaEngine5 is already in the last commit - OK
+else
+    echo UnreaEngine5 is NOT in the last commit - FAIL
+    echo Cleaning UnrealEngine5 build...
+    git clean -fdx
+    echo Pulling last UnrealEngine5 changes...
+    git pull
+fi
 echo "Setup CARLA UnrealEngine5..."
 ./Setup.sh --force
 echo "GenerateProjectFiles CARLA UnrealEngine5..."
@@ -103,7 +134,13 @@ popd
 popd
 
 echo "Configuring CARLA..."
-retry --until=success --times=10 -- cmake -G Ninja -S . -B Build --toolchain=$PWD/CMake/LinuxToolchain.cmake -DLAUNCH_ARGS="-prefernvidia" -DCMAKE_BUILD_TYPE=Release -DENABLE_ROS2=ON -DBUILD_CARLA_UNREAL=ON -DCARLA_UNREAL_ENGINE_PATH=$CARLA_UNREAL_ENGINE_PATH
+retry --until=success --times=10 -- cmake -G Ninja -S . -B Build \
+    --toolchain=$PWD/CMake/LinuxToolchain.cmake \
+    -DLAUNCH_ARGS="-prefernvidia" \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DENABLE_ROS2=ON \
+    -DBUILD_CARLA_UNREAL=ON \
+    -DCARLA_UNREAL_ENGINE_PATH=$CARLA_UNREAL_ENGINE_PATH
 echo "Building CARLA..."
 retry --until=success --times=10 -- cmake --build Build
 echo "Installing PythonAPI..."

@@ -10,6 +10,7 @@
 #include "Carla/Sensor/Sensor.h"
 #include "Carla/Sensor/UE4_Overridden/SceneCaptureComponent2D_CARLA.h"
 #include "Carla/Sensor/ImageUtil.h"
+#include "Carla/Sensor/PostProcessConfig.h"
 
 #include "Async/Async.h"
 
@@ -27,7 +28,7 @@
 class UDrawFrustumComponent;
 class UStaticMeshComponent;
 class UTextureRenderTarget2D;
-
+class APostProcessVolume;
 
 
 struct FCameraGBufferUint8
@@ -112,9 +113,6 @@ struct FCameraGBufferFloat
   mutable bool bIsUsed = false;
   FDataStream Stream;
 };
-
-
-
 
 
 
@@ -369,6 +367,9 @@ public:
   UFUNCTION(BlueprintCallable)
   float GetChromAberrOffset() const;
 
+  virtual void UpdatePostProcessConfig(
+    FPostProcessConfig& InOutPostProcessConfig);
+
   /// Use for debugging purposes only.
   UFUNCTION(BlueprintCallable)
   bool ReadPixels(TArray<FColor> &BitMap) const
@@ -423,6 +424,8 @@ public:
     FCameraGBufferUint8 CustomStencil;
   } CameraGBuffers;
 
+  UFUNCTION(BlueprintCallable)
+  static bool ApplyPostProcessVolumeToSensor(APostProcessVolume* Origin, ASceneCaptureSensor* Dest, bool bOverrideCurrentCamera = false);
 protected:
 
   void CaptureSceneExtended();
@@ -441,11 +444,11 @@ protected:
   virtual void SetUpSceneCaptureComponent(USceneCaptureComponent2D &SceneCapture) {}
 
   /// Render target necessary for scene capture.
-  UPROPERTY(EditAnywhere)
+  UPROPERTY(VisibleAnywhere)
   UTextureRenderTarget2D *CaptureRenderTarget = nullptr;
 
   /// Scene capture component.
-  UPROPERTY(EditAnywhere)
+  UPROPERTY(VisibleAnywhere)
   USceneCaptureComponent2D_CARLA *CaptureComponent2D = nullptr;
 
   UPROPERTY(EditAnywhere)

@@ -57,6 +57,12 @@ carla_option (
 )
 
 carla_option (
+  ENABLE_ROS2_DEMO
+  "Enable ROS2 demo."
+  OFF
+)
+
+carla_option (
   ENABLE_OSM2ODR
   "Enable OSM2ODR."
   OFF
@@ -126,6 +132,18 @@ carla_string_option (
   LIBCARLA_IMAGE_SUPPORTED_FORMATS
   "Semicolon-separated list of supported image formats by LibCarla. Available formats: png, jpeg, tiff."
   "png"
+)
+
+carla_string_option (
+  GXX_COMPILER
+  "g++ compiler used by some CARLA extensions."
+  /usr/bin/g++-12
+)
+
+carla_string_option (
+  GCC_COMPILER
+  "gcc compiler used by some CARLA extensions."
+  /usr/bin/gcc-12
 )
 
 carla_option (
