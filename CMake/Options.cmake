@@ -105,12 +105,6 @@ carla_option (
 )
 
 carla_option (
-  BUILD_PYTHON_API_WHEEL_PACKAGE
-  "Whether to build the CARLA python API wheel package."
-  ON
-)
-
-carla_option (
   ENABLE_PEP517
   "Whether to use PEP 517."
   ON
@@ -126,6 +120,12 @@ carla_option (
   ENABLE_WARNINGS_TO_ERRORS
   "Whether to convert build warnings to errors."
   OFF
+)
+
+carla_option (
+  ENABLE_ROBOTEC_GPU_LIDAR
+  "Whether to enable Robotec GPU LIDAR support."
+  ON
 )
 
 carla_string_option (
@@ -378,7 +378,6 @@ carla_string_option (
   ${CARLA_LIBOSMSCOUT_VERSION}
 )
 
-
 # ==== STREETMAP ====
 
 carla_string_option (
@@ -391,4 +390,18 @@ carla_string_option (
   CARLA_STREETMAP_TAG
   "Target StreetMap git tag."
   ${CARLA_STREETMAP_VERSION}
+)
+
+# ==== ROBOTECGPU LIDAR ====
+
+carla_string_option (
+  CARLA_ROBOTEC_GPU_LIDAR_VERSION
+  "Target RoboTec GPU Lidar version."
+  0.17.0
+)
+
+carla_string_option (
+  CARLA_ROBOTEC_GPU_LIDAR_TAG
+  "Target RoboTec GPU Lidar git tag."
+  v${CARLA_ROBOTEC_GPU_LIDAR_VERSION}
 )

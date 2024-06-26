@@ -39,6 +39,7 @@ project (
     C
     CXX
     ASM # This is required by some dependencies, such as LibPNG.
+    CUDA
   DESCRIPTION
     "Open-source simulator for autonomous driving research."
   HOMEPAGE_URL
