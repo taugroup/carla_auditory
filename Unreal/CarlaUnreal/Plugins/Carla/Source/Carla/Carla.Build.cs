@@ -134,12 +134,18 @@ public class Carla :
     PublicIncludePaths.Add(ModuleDirectory);
 
     foreach (var Path in File.ReadAllText(Path.Combine(PluginDirectory, "Includes.def")).Split(';'))
-      if (Path.Length != 0)
-        PublicIncludePaths.Add(Path.Trim());
+    {
+      var PathTrimmed = Path.Trim();
+      if (PathTrimmed.Length != 0)
+        PublicIncludePaths.Add(PathTrimmed.Trim());
+    }
 
     foreach (var Path in File.ReadAllText(Path.Combine(PluginDirectory, "Libraries.def")).Split(';'))
-      if (Path.Length != 0)
-        PublicAdditionalLibraries.Add(Path.Trim());
+    {
+      var PathTrimmed = Path.Trim();
+      if (PathTrimmed.Length != 0)
+        PublicAdditionalLibraries.Add(PathTrimmed.Trim());
+    }
 
     if (EnableOSM2ODR)
     {

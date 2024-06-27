@@ -106,6 +106,7 @@ set (
   zlibstatic
   png_static
   rpc
+  RobotecGPULidar
 )
 
 set (UE_DEPENDENCIES ${UE_DEPENDENCIES_ORDER_ONLY})

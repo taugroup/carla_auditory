@@ -12,7 +12,7 @@ include (FetchContent)
 
 set (CARLA_DEPENDENCIES_PENDING)
 
-macro (carla_dependency_add NAME TAG ARCHIVE_URL GIT_URL)
+macro (carla_dependency_add_raw NAME TAG ARCHIVE_URL GIT_URL)
   if (PREFER_CLONE)
     carla_message ("Cloning ${NAME}...")
     FetchContent_Declare (
@@ -25,7 +25,6 @@ macro (carla_dependency_add NAME TAG ARCHIVE_URL GIT_URL)
       OVERRIDE_FIND_PACKAGE
       ${ARGN}
     )
-    list (APPEND CARLA_DEPENDENCIES_PENDING ${NAME})
   else ()
     carla_message ("Downloading ${NAME}...")
     FetchContent_Declare (
@@ -34,8 +33,12 @@ macro (carla_dependency_add NAME TAG ARCHIVE_URL GIT_URL)
       OVERRIDE_FIND_PACKAGE
       ${ARGN}
     )
-    list (APPEND CARLA_DEPENDENCIES_PENDING ${NAME})
   endif ()
+endmacro ()
+
+macro (carla_dependency_add NAME TAG ARCHIVE_URL GIT_URL)
+  carla_dependency_add_raw (${NAME} ${TAG} ${ARCHIVE_URL} ${GIT_URL} ${ARGN})
+  list (APPEND CARLA_DEPENDENCIES_PENDING ${NAME})
 endmacro ()
 
 macro (carla_dependencies_make_available)
@@ -247,6 +250,50 @@ if (BUILD_CARLA_UNREAL)
     https://github.com/carla-simulator/StreetMap.git
     SOURCE_DIR ${CARLA_WORKSPACE_PATH}/Unreal/CarlaUnreal/Plugins/StreetMap
   )
+endif ()
+
+if (BUILD_CARLA_UNREAL AND ENABLE_ROBOTEC_GPU_LIDAR)
+  enable_language (CUDA)
+
+  find_package (
+    Python3
+    COMPONENTS
+      Interpreter
+    REQUIRED
+  )
+
+  carla_dependency_option (RGL_BUILD_STATIC ON)
+  carla_dependency_option (RGL_BUILD_TESTS OFF)
+  carla_dependency_option (RGL_BUILD_TAPED_TESTS OFF)
+  carla_dependency_add_raw (
+    RobotecGPULidar
+    ${CARLA_ROBOTEC_GPU_LIDAR_TAG}
+    https://github.com/RobotecAI/RobotecGPULidar/archive/refs/tags/${CARLA_ROBOTEC_GPU_LIDAR_TAG}.zip
+    https://github.com/RobotecAI/RobotecGPULidar.git
+  )
+  
+  FetchContent_GetProperties (RobotecGPULidar)
+  
+  if (NOT RobotecGPULidar_POPULATED)
+    FetchContent_Populate (RobotecGPULidar)
+    FetchContent_GetProperties (
+      RobotecGPULidar
+      SOURCE_DIR RobotecGPULidar_SOURCE_DIR
+      BINARY_DIR RobotecGPULidar_BINARY_DIR
+    )
+    
+    execute_process (
+      COMMAND ${Python3_EXECUTABLE} setup.py --install-deps
+      WORKING_DIRECTORY ${RobotecGPULidar_SOURCE_DIR}
+    )
+
+    add_subdirectory (
+      ${RobotecGPULidar_SOURCE_DIR}
+      ${RobotecGPULidar_BINARY_DIR}
+    )
+  endif ()
+
+  
 endif ()
 
 carla_dependencies_make_available ()

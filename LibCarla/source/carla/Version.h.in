@@ -8,7 +8,7 @@
 
 namespace carla {
 
-  constexpr const char *version() {
+  constexpr const char* version() {
     return "@CARLA_VERSION@";
   }
 
