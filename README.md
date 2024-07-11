@@ -24,7 +24,7 @@ environmental conditions.
 * Intel i7 gen 9th - 11th / Intel i9 gen 9th - 11th / AMD ryzen 7 / AMD ryzen 9
 * +32 GB RAM memory 
 * NVIDIA RTX 3070 / NVIDIA RTX 3080 / NVIDIA RTX 4090
-* Ubuntu 20.04
+* **Minimum OS: Ubuntu version 22.04 and Windows 11** (this version of CARLA will not work with older Ubuntu/Windows versions!!!)
 
 ## Documentation
 
