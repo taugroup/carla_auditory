@@ -9,6 +9,8 @@
 #include "Carla/Actor/ActorBlueprintFunctionLibrary.h"
 #include "Carla/Game/CarlaEpisode.h"
 #include "Carla/Vehicle/CarlaWheeledVehicle.h"
+#include "Carla/Settings/CarlaSettings.h"
+#include "Carla/Game/CarlaStatics.h"
 #include <string.h>
 #include <algorithm>
 #include "V2X/CaService.h"

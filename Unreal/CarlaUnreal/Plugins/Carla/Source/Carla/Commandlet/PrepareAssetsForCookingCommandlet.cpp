@@ -19,6 +19,8 @@
 #include "HAL/PlatformFileManager.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Materials/MaterialInstanceConstant.h"
+#include "MaterialDomain.h"
+#include "Materials/Material.h"
 #include "Carla/MapGen/LargeMapManager.h"
 
 static bool ValidateStaticMesh(UStaticMesh *Mesh)

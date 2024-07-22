@@ -564,11 +564,13 @@ FVehicleTelemetryData ACarlaWheeledVehicle::GetVehicleTelemetryData() const
   TelemetryData.Steer = LastAppliedControl.Steer;
   TelemetryData.Throttle = LastAppliedControl.Throttle;
   TelemetryData.Brake = LastAppliedControl.Brake;
-  TelemetryData.EngineRPM = MovementComponent->GetEngineRotationSpeed();
   TelemetryData.Gear = GetVehicleCurrentGear();
   TelemetryData.Drag = MovementComponent->DebugDragMagnitude / 100.0f;  // kg*cm/s2 to Kg*m/s2
 
   // Wheels telemetry data
+  // Have to be changed by chaos telemetry
+  /*
+  TelemetryData.EngineRPM = MovementComponent->GetEngineRotationSpeed();
   FPhysXVehicleManager* MyVehicleManager = FPhysXVehicleManager::GetVehicleManagerFromScene(GetWorld()->GetPhysicsScene());
 
   SCOPED_SCENE_READ_LOCK(MyVehicleManager->GetScene());
@@ -599,6 +601,7 @@ FVehicleTelemetryData ACarlaWheeledVehicle::GetVehicleTelemetryData() const
 
   TelemetryData.Wheels = Wheels;
 
+  */
   return TelemetryData;
 
 }

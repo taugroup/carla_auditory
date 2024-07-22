@@ -140,7 +140,10 @@ struct FShapeVisitor
             End, Color, LifeTime, Thickness, DepthPriority),
         FBatchedLine(
             Transform.TransformPosition(FVector(ArrowTipDist, -ArrowSize, -ArrowSize)),
-            End, Color, LifeTime, Thickness, DepthPriority)}));
+            End, Color, LifeTime, Thickness, DepthPriority)
+    };
+
+    World->PersistentLineBatcher->DrawLines(TArrayView<FBatchedLine>(BatchedLines, 5));
   }
 
   void operator()(const Shape::HUDArrow &Arrow) const {
