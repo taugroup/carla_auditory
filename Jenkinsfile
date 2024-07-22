@@ -29,8 +29,9 @@ pipeline
                     steps {
                         sh "cmake --build Build --target package"
                     }
-                }
-            }
-        }
+                }*/
+                
+            //}
+        //}
     }
 }

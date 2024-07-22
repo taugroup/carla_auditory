@@ -247,7 +247,8 @@ public:
   void AttachActors(
       AActor *Child,
       AActor *Parent,
-      EAttachmentType InAttachmentType = EAttachmentType::Rigid);
+      EAttachmentType InAttachmentType = EAttachmentType::Rigid,
+      const FString& SocketName = "");
 
   /// @copydoc FActorDispatcher::DestroyActor(AActor*)
   UFUNCTION(BlueprintCallable)

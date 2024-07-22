@@ -160,16 +160,32 @@ void UOpenDriveToMap::CreateMap()
     UE_LOG(LogCarlaToolsMapGenerator, Error, TEXT("Map Name Is Empty") );
     return;
   }
-  if ( !IsValid(FileDownloader) )
+
+  if( !Url.IsEmpty() ) {
+    if ( !IsValid(FileDownloader) )
+    {
+      FileDownloader = NewObject<UCustomFileDownloader>();
+    }
+
+    FileDownloader->ResultFileName = MapName;
+    FileDownloader->Url = Url;
+
+    FileDownloader->DownloadDelegate.BindUObject( this, &UOpenDriveToMap::ConvertOSMInOpenDrive );
+    FileDownloader->StartDownload();
+  }
+  else if(LocalFilePath.EndsWith(".xodr"))
   {
-    FileDownloader = NewObject<UCustomFileDownloader>();
+    ImportXODR();
+  }
+  else if(LocalFilePath.EndsWith(".osm"))
+  {
+    ImportOSM();
+  }
+  else
+  {
+    UE_LOG(LogCarlaToolsMapGenerator, Error, TEXT("URL and Local FilePath are Empty. URL: %s  Local FilePath: %s"), *Url, *LocalFilePath );
   }
 
-  FileDownloader->ResultFileName = MapName;
-  FileDownloader->Url = Url;
-
-  FileDownloader->DownloadDelegate.BindUObject( this, &UOpenDriveToMap::ConvertOSMInOpenDrive );
-  FileDownloader->StartDownload();
 }
 
 void UOpenDriveToMap::CreateTerrain( const int MeshGridSize, const float MeshGridSectionSize)
@@ -284,6 +300,9 @@ AActor* UOpenDriveToMap::SpawnActorWithCheckNoCollisions(UClass* ActorClassToSpa
 void UOpenDriveToMap::GenerateTileStandalone(){
   UE_LOG(LogCarlaToolsMapGenerator, Log, TEXT("UOpenDriveToMap::GenerateTileStandalone Function called"));
 
+#if PLATFORM_WINDOWS
+  GenerateTile();
+#else
   ExecuteTileCommandlet();
 
   UWorld* World = GEditor->GetEditorWorldContext().World();
@@ -360,6 +379,8 @@ void UOpenDriveToMap::GenerateTile(){
     UEditorLoadingAndSavingUtils::SaveDirtyPackages(true, true);
     LevelSubsystem->SaveCurrentLevel();
     RemoveFromRoot();
+#endif
+
   }
 }
 
@@ -514,7 +535,7 @@ void UOpenDriveToMap::GenerateAll(const std::optional<carla::road::Map>& ParamCa
   {
     GenerateRoadMesh(ParamCarlaMap, MinLocation, MaxLocation);
     GenerateLaneMarks(ParamCarlaMap, MinLocation, MaxLocation);
-    //GenerateSpawnPoints(ParamCarlaMap);
+    GenerateSpawnPoints(ParamCarlaMap, MinLocation, MaxLocation);
     CreateTerrain(12800, 256);
     GenerateTreePositions(ParamCarlaMap, MinLocation, MaxLocation);
     GenerationFinished(MinLocation, MaxLocation);
@@ -913,6 +934,41 @@ bool UOpenDriveToMap::IsInRoad(
     }
   }
   return false;
+}
+
+void UOpenDriveToMap::ImportXODR(){
+  IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
+  FString MyFileDestination = FPaths::ProjectContentDir() + "CustomMaps/" + MapName + "/OpenDrive/" + MapName + ".xodr";
+
+  if(FileManager.CopyFile(  *MyFileDestination, *LocalFilePath,
+                              EPlatformFileRead::None,
+                              EPlatformFileWrite::None))
+  {
+    UE_LOG(LogCarlaToolsMapGenerator, Verbose, TEXT("FilePaths: File Copied!"));
+    FilePath = MyFileDestination;
+    LoadMap();
+  }
+  else
+  {
+    UE_LOG(LogCarlaToolsMapGenerator, Error, TEXT("FilePaths local xodr file not copied: File not Copied!"));
+  }
+}
+
+void UOpenDriveToMap::ImportOSM(){
+  IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
+  FString MyFileDestination = FPaths::ProjectContentDir() + "CustomMaps/" + MapName + "/OpenDrive/" + MapName + ".osm";
+
+  if(FileManager.CopyFile(  *MyFileDestination, *LocalFilePath,
+                              EPlatformFileRead::None,
+                              EPlatformFileWrite::None))
+  {
+    UE_LOG(LogCarlaToolsMapGenerator, Verbose, TEXT("FilePaths: File Copied!"));
+    ConvertOSMInOpenDrive();
+  }
+  else
+  {
+    UE_LOG(LogCarlaToolsMapGenerator, Error, TEXT("FilePaths local osm file not copied: File not Copied!"));
+  }
 }
 
 void UOpenDriveToMap::MoveActorsToSubLevels(TArray<AActor*> ActorsToMove)

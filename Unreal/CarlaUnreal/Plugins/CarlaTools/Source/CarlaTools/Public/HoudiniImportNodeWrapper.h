@@ -47,18 +47,14 @@ protected:
 
   UFUNCTION()
   void HandleCompleted(
-      UHoudiniPublicAPIAssetWrapper* AssetWrapper, 
       bool bCookSuccess, 
       bool bBakeSuccess);
 
   UFUNCTION()
   void HandleFailed(
-      UHoudiniPublicAPIAssetWrapper* AssetWrapper,
       bool bCookSuccess,
       bool bBakeSuccess);
 
-private:
-  UHoudiniPublicAPIProcessHDANode* HDANode;
 
 };
 #endif

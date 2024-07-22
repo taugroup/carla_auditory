@@ -12,12 +12,12 @@ namespace carla {
 namespace rpc {
 
   enum class ActorAttributeType : uint8_t {
-    Bool,
-    Int,
-    Float,
-    String,
-    RGBColor,
-    Vector,
+    Bool = 1u,
+    Int = 2u,
+    Float = 3u,
+    String = 4u,
+    RGBColor = 5u,
+    Vector = 6u,
 
     SIZE,
     INVALID

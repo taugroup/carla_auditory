@@ -93,6 +93,12 @@ namespace client {
     /// Change the weather in the simulation.
     void SetWeather(const rpc::WeatherParameters &weather);
 
+    /// Get Gravity value used for IMUI Sensor accelerometer calculation
+    float GetIMUISensorGravity() const;
+    
+    /// Set Gravity value used for IMUI Sensor accelerometer calculation
+    void SetIMUISensorGravity(float NewIMUISensorGravity);
+
     /// Return a snapshot of the world at this moment.
     WorldSnapshot GetSnapshot() const;
 
@@ -112,7 +118,8 @@ namespace client {
         const ActorBlueprint &blueprint,
         const geom::Transform &transform,
         Actor *parent = nullptr,
-        rpc::AttachmentType attachment_type = rpc::AttachmentType::Rigid);
+        rpc::AttachmentType attachment_type = rpc::AttachmentType::Rigid,
+        const std::string& socket_name = "");
 
     /// Same as SpawnActor but return nullptr on failure instead of throwing an
     /// exception.
@@ -120,7 +127,8 @@ namespace client {
         const ActorBlueprint &blueprint,
         const geom::Transform &transform,
         Actor *parent = nullptr,
-        rpc::AttachmentType attachment_type = rpc::AttachmentType::Rigid) noexcept;
+        rpc::AttachmentType attachment_type = rpc::AttachmentType::Rigid,
+        const std::string& socket_name = "") noexcept;
 
     /// Block calling thread until a world tick is received.
     WorldSnapshot WaitForTick(time_duration timeout) const;

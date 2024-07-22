@@ -165,6 +165,54 @@ boost::python::object VehiclePhysicsControl_init(boost::python::tuple args, boos
   return res;
 }
 
+static auto GetWheelsTelemetry(const carla::rpc::VehicleTelemetryData &self) {
+  const auto &wheels = self.GetWheels();
+  boost::python::object get_iter = boost::python::iterator<std::vector<carla::rpc::WheelTelemetryData>>();
+  boost::python::object iter = get_iter(wheels);
+  return boost::python::list(iter);
+}
+
+static void SetWheelsTelemetry(carla::rpc::VehicleTelemetryData &self, const boost::python::list &list) {
+  std::vector<carla::rpc::WheelTelemetryData> wheels;
+  auto length = boost::python::len(list);
+  for (auto i = 0u; i < length; ++i) {
+    wheels.push_back(boost::python::extract<carla::rpc::WheelTelemetryData &>(list[i]));
+  }
+  self.SetWheels(wheels);
+}
+
+boost::python::object VehicleTelemetryData_init(boost::python::tuple args, boost::python::dict kwargs) {
+  // Args names
+  const uint32_t NUM_ARGUMENTS = 7;
+  const char *args_names[NUM_ARGUMENTS] = {
+    "speed",
+    "steer",
+    "throttle",
+    "brake",
+    "engine_rpm",
+    "gear",
+    "wheels"
+  };
+
+  boost::python::object self = args[0];
+  args = boost::python::tuple(args.slice(1, boost::python::_));
+
+  auto res = self.attr("__init__")();
+  if (len(args) > 0) {
+    for (unsigned int i = 0; i < len(args); ++i) {
+      self.attr(args_names[i]) = args[i];
+    }
+  }
+
+  for (unsigned int i = 0; i < NUM_ARGUMENTS; ++i) {
+    if (kwargs.contains(args_names[i])) {
+      self.attr(args_names[i]) = kwargs[args_names[i]];
+    }
+  }
+
+  return res;
+}
+
 static auto GetBonesTransform(const carla::rpc::WalkerBoneControlIn &self) {
   const std::vector<carla::rpc::BoneTransformDataIn> &bone_transform_data = self.bone_transforms;
   boost::python::object get_iter =
@@ -389,4 +437,50 @@ void export_control() {
     .def("__ne__", &cr::VehiclePhysicsControl::operator!=)
     .def(self_ns::str(self_ns::self))
   ;
+
+  class_<cr::WheelTelemetryData>("WheelTelemetryData")
+    .def(init<float, float, float, float, float, float, float, float, float, float, float>(
+        (arg("tire_friction")=0.0f,
+         arg("lat_slip")=0.0f,
+         arg("long_slip")=0.0f,
+         arg("omega")=0.0f,
+         arg("tire_load")=0.0f,
+         arg("normalized_tire_load")=0.0f,
+         arg("torque")=0.0f,
+         arg("long_force")=0.0f,
+         arg("lat_force")=0.0f,
+         arg("normalized_long_force")=0.0f,
+         arg("normalized_lat_force")=0.0f)))
+    .def_readwrite("tire_friction", &cr::WheelTelemetryData::tire_friction)
+    .def_readwrite("lat_slip", &cr::WheelTelemetryData::lat_slip)
+    .def_readwrite("long_slip", &cr::WheelTelemetryData::long_slip)
+    .def_readwrite("omega", &cr::WheelTelemetryData::omega)
+    .def_readwrite("tire_load", &cr::WheelTelemetryData::tire_load)
+    .def_readwrite("normalized_tire_load", &cr::WheelTelemetryData::normalized_tire_load)
+    .def_readwrite("torque", &cr::WheelTelemetryData::torque)
+    .def_readwrite("long_force", &cr::WheelTelemetryData::long_force)
+    .def_readwrite("lat_force", &cr::WheelTelemetryData::lat_force)
+    .def_readwrite("normalized_long_force", &cr::WheelTelemetryData::normalized_long_force)
+    .def_readwrite("normalized_lat_force", &cr::WheelTelemetryData::normalized_lat_force)
+    .def("__eq__", &cr::WheelTelemetryData::operator==)
+    .def("__ne__", &cr::WheelTelemetryData::operator!=)
+    .def(self_ns::str(self_ns::self))
+  ;
+
+  class_<cr::VehicleTelemetryData>("VehicleTelemetryData", no_init)
+    .def("__init__", raw_function(VehicleTelemetryData_init))
+    .def(init<>())
+    .def_readwrite("speed", &cr::VehicleTelemetryData::speed)
+    .def_readwrite("steer", &cr::VehicleTelemetryData::steer)
+    .def_readwrite("throttle", &cr::VehicleTelemetryData::throttle)
+    .def_readwrite("brake", &cr::VehicleTelemetryData::brake)
+    .def_readwrite("engine_rpm", &cr::VehicleTelemetryData::engine_rpm)
+    .def_readwrite("gear", &cr::VehicleTelemetryData::gear)
+    .def_readwrite("drag", &cr::VehicleTelemetryData::drag)
+    .add_property("wheels", &GetWheelsTelemetry, &SetWheelsTelemetry)
+    .def("__eq__", &cr::VehicleTelemetryData::operator==)
+    .def("__ne__", &cr::VehicleTelemetryData::operator!=)
+    .def(self_ns::str(self_ns::self))
+  ;
+
 }
