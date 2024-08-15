@@ -616,11 +616,12 @@ class HUD(object):
         self._server_clock = pygame.time.Clock()
         self.rss_state_visualizer = RssStateVisualizer(self.dim, self._font_mono, self._world)
 
-    def on_world_tick(self, timestamp):
+    def on_world_tick(self, world_snapshot):
+        """Gets information from the world at every tick"""
         self._server_clock.tick()
         self.server_fps = self._server_clock.get_fps()
-        self.frame = timestamp.frame
-        self.simulation_time = timestamp.elapsed_seconds
+        self.frame = world_snapshot.frame
+        self.simulation_time = world_snapshot.elapsed_seconds
 
     def tick(self, player, clock):
         self._notifications.tick(clock)
