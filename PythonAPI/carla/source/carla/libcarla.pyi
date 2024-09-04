@@ -1,45 +1,113 @@
-from enum import Enum, Flag, IntFlag
+# --------- Linting ------------
+# Not relevant for stubs
+# pylint: disable=unused-argument,C0103,used-before-assignment,dangerous-default-value,super-init-not-called,no-name-in-module
+#
+# needs change in API
+# pylint: disable=too-many-locals,too-many-public-methods,too-many-arguments,too-many-public-methods,too-few-public-methods,too-many-lines,redefined-builtin
+#
+# Fixable
+# pylint: disable=line-too-long
+# Needs __all__ to be defined
+# pylint: disable=useless-import-alias,unused-import
+#
+# False positives
+# Should only trigger for class name used in itself
+# pylint: disable=undefined-variable
+#
+# ruff: noqa: F401,F405,F403
+# -------------------------------
+
 import sys
-from typing import (Callable, Iterable, Iterator, Union, Optional, overload, ClassVar, Any, TypeVar, 
-                    type_check_only)
+from enum import Enum, Flag, IntFlag
+from typing import (
+    Any,
+    Callable,
+    Generic,
+    Iterator,
+    Optional,
+    Sequence,
+    TypeVar,
+    Union,
+    overload,
+    type_check_only,
+)
+
+# ----------- RSS --------------
+# Available only on RSS build
+from . import ad as ad
+
+# "as" marks them as reexport for pyright as long as __all__ is not specified
+from .__carla_rss import (
+    RssActorConstellationData as RssActorConstellationData,
+    RssActorConstellationResult as RssActorConstellationResult,
+    RssEgoDynamicsOnRoute as RssEgoDynamicsOnRoute,
+    RssLogLevel as RssLogLevel,
+    RssResponse as RssResponse,
+    RssRestrictor as RssRestrictor,
+    RssRoadBoundariesMode as RssRoadBoundariesMode,
+    RssSensor as RssSensor,
+)
+# -------------------------------
+from . import command
+
+# pylint: disable=wildcard-import,unused-wildcard-import
+from .command import *
+
+if sys.version_info >= (3, 13):
+    from typing import TypeVar
+else:
+    from typing_extensions import TypeVar
 
 if sys.version_info >= (3, 11):
-    from typing import Self
+    from typing import Self, Never, NoReturn
 else:
-    from typing_extensions import Self
-    
+    from typing_extensions import Self, Never, NoReturn
+
 if sys.version_info >= (3, 9):
     from typing import Annotated
 else:
     from typing_extensions import Annotated
-    
+
 if sys.version_info >= (3, 8):
     from typing import Literal
 else:
     from typing_extensions import Literal
-
 
 # Note: __protected_variables are not part of the carla module, they are helpers to complete the stubs.
 
 __SensorData = TypeVar("__SensorData", bound=SensorData)
 """Generic that allows subclassing."""
 
-@type_check_only
-class __CarlaEnum(Enum):
-    """
-    CARLA's Enums have a `values` and `names` attribute that are not part of the python `enum.Enum` 
-    class. This abstract stub class adds these attributes.
-    """
-        
-    values : ClassVar[dict[int, Self]]
-    names  : ClassVar[dict[str, Self]]
-    
-    def __init_subclass__(cls):
-        cls.values : dict[int, cls]
-        cls.names  : dict[str, cls]
-         
+__Actor = TypeVar("__Actor", bound=Actor, default=Actor, infer_variance=True)  # noqa: F405
+"""Generic Actor type that allows subclassing."""
 
-class AckermannControllerSettings():
+@type_check_only
+class _CarlaEnum(Enum):
+    """
+    CARLA's Enums have a `values` and `names` attribute that are not part of the python `enum.Enum`
+    class. This abstract stub class adds these attributes.
+    
+    Attention:
+        This class derives from `enum.Enum` to allow usage with `Literal`,
+        however it is not a subclass of enum.Enum in the actual implementation.
+    """
+
+    values: dict[int, Self]
+    names: dict[str, Self]
+    
+    @property
+    def name(self: Never) -> NoReturn:
+        """The name attribute is not available in CARLA's enums."""
+    @property
+    def value(self: Never) -> NoReturn:
+        """The value attribute is not available in CARLA's enums."""
+
+    def __init_subclass__(cls) -> None:
+        cls.values: dict[int, cls]  # noqa: B032
+        cls.names: dict[str, cls]  # noqa: B032
+    
+
+class AckermannControllerSettings:
     """Manages the settings of the Ackermann PID controller."""
 
     # region Instance Variables
@@ -81,21 +149,19 @@ class AckermannControllerSettings():
                  speed_kd: float = 0.25,
                  accel_kp: float = 0.01,
                  accel_ki: float = 0.0,
-                 accel_kd: float = 0.01):
-        """Manages the settings of the Ackermann PID controller.
-        """
+                 accel_kd: float = 0.01) -> None:
+        """Manages the settings of the Ackermann PID controller."""
     # endregion
 
     # region Dunder Methods
-    def __eq__(self, __value: AckermannControllerSettings) -> bool: ...
+    def __eq__(self, other: AckermannControllerSettings, /) -> bool: ...
 
-    def __ne__(self, __value: AckermannControllerSettings) -> bool: ...
+    def __ne__(self, other: AckermannControllerSettings, /) -> bool: ...
 
     def __str__(self) -> str: ...
     # endregion
 
-
-class Actor():
+class Actor:
     """CARLA defines actors as anything that plays a role in the simulation or can be moved around.
 
     That includes: pedestrians, vehicles, sensors and traffic signs (considering traffic lights as part of these). Actors are spawned in the simulation by `carla.World` and they need for a `carla.ActorBlueprint` to be created. These blueprints belong into a library provided by CARLA, find more about them here.
@@ -105,21 +171,20 @@ class Actor():
     # region Instance Variables
     @property
     def attributes(self) -> dict:
-        """A dictionary containing the attributes of the blueprint this actor was based on.
-        """
+        """A dictionary containing the attributes of the blueprint this actor was based on."""
         ...
 
     @property
     def id(self) -> int:
-        """Identifier for this actor. Unique during a given episode.
-        """
+        """Identifier for this actor. Unique during a given episode."""
         ...
 
     @property
     def type_id(self) -> str:
         """The identifier of the blueprint this actor was based on,
 
-        e.g., `vehicle.ford.mustang.`"""
+        e.g., `vehicle.ford.mustang.`
+        """
         ...
 
     @property
@@ -167,7 +232,7 @@ class Actor():
         This method should be used for instantaneous torques, usually applied once. Use `add_torque()` to apply rotation forces over a period of time.
 
         Args:
-            `angular_impulse (Vector3D - degrees*s)`: Angular impulse vector in global coordinates.\n
+            `angular_impulse (Vector3D - degrees*s)`: Angular impulse vector in global coordinates.
         """
         ...
 
@@ -177,7 +242,7 @@ class Actor():
         This method should be used for forces that are applied over a certain period of time. Use `add_impulse()` to apply an impulse that only lasts an instant.
 
         Args:
-            `force (Vector3D - N)`: Force vector in global coordinates.\n
+            `force (Vector3D - N)`: Force vector in global coordinates.
         """
         ...
 
@@ -187,7 +252,7 @@ class Actor():
         This method should be used for instantaneous forces, usually applied once. Use `add_force()` to apply forces over a period of time.
 
         Args:
-            `impulse (Vector3D - N*s)`: Impulse vector in global coordinates.\n
+            `impulse (Vector3D - N*s)`: Impulse vector in global coordinates.
         """
         ...
 
@@ -197,7 +262,7 @@ class Actor():
         This method should be used for torques that are applied over a certain period of time. Use `add_angular_impulse()` to apply a torque that only lasts an instant.
 
         Args:
-            `torque (Vector3D - degrees)`: Torque vector in global coordinates.\n
+            `torque (Vector3D - degrees)`: Torque vector in global coordinates.
         """
         ...
 
@@ -211,8 +276,7 @@ class Actor():
         ...
 
     def disable_constant_velocity(self):
-        """Disables any constant velocity previously set for a `carla.Vehicle` actor.
-        """
+        """Disables any constant velocity previously set for a `carla.Vehicle` actor."""
         ...
 
     def enable_constant_velocity(self, velocity: Vector3D):
@@ -225,19 +289,19 @@ class Actor():
         + Warning: Enabling a constant velocity for a vehicle managed by the `Traffic Manager` may cause conflicts. This method overrides any changes in velocity by the TM.
 
         Args:
-            `velocity (Vector3D - m/s)`:  Velocity vector in local space.\n
+            `velocity (Vector3D - m/s)`:  Velocity vector in local space.
         """
         ...
     # endregion
 
     # region Getters
     def get_acceleration(self) -> Vector3D:
-        """Returns the actor's 3D acceleration vector the client received during last tick. 
+        """Returns the actor's 3D acceleration vector the client received during last tick.
 
         The method does not call the simulator.
 
         Returns:
-            `Vector3D`: m/s^2\n
+            `Vector3D`: m/s^2
         """
         ...
 
@@ -247,19 +311,19 @@ class Actor():
         The method does not call the simulator.
 
         Returns:
-            `Vector3D`: deg/s\n
+            `Vector3D`: deg/s
         """
         ...
 
     def get_location(self) -> Location:
-        """Returns the actor's location the client received during last tick. 
+        """Returns the actor's location the client received during last tick.
 
         The method does not call the simulator.
 
         + Setter: `carla.Actor.set_location`
 
         Returns:
-            `Location`: - meters\n
+            `Location`: - meters
         """
         ...
 
@@ -271,7 +335,7 @@ class Actor():
         + Setter: `carla.Actor.set_transform`
 
         Returns:
-            `Transform`\n
+            `Transform`
         """
 
     def get_velocity(self) -> Vector3D:
@@ -280,7 +344,7 @@ class Actor():
         The method does not call the simulator.
 
         Returns:
-            `Vector3D`:  m/s\n
+            `Vector3D`:  m/s
         """
         ...
 
@@ -356,16 +420,19 @@ class Actor():
     def __str__(self) -> str: ...
     # endregion
 
+class ActorAttribute:
+    """
+    CARLA provides a library of blueprints for actors that can be accessed as `carla.BlueprintLibrary`.
+    Each of these blueprints has a series of attributes defined internally.
+    Some of these are modifiable, others are not.
 
-class ActorAttribute():
-    """CARLA provides a library of blueprints for actors that can be accessed as `carla.BlueprintLibrary`. Each of these blueprints has a series of attributes defined internally. Some of these are modifiable, others are not. A list of recommended values is provided for those that can be set.
+    A list of recommended values is provided for those that can be set.
     """
 
     # region Instance Variables
     @property
     def id(self) -> str:
-        """The attribute's name and identifier in the library.
-        """
+        """The attribute's name and identifier in the library."""
     @property
     def is_modifiable(self) -> bool:
         """It is True if the attribute's value can be modified."""
@@ -401,18 +468,17 @@ class ActorAttribute():
 
     # region Dunder Methods
     def __bool__(self) -> bool: ...
-    def __eq__(self, __value: Union[bool, int, float, str, Color, ActorAttribute]) -> bool: ...
+    def __eq__(self, other: Union[bool, float, str, Color, ActorAttribute], /) -> bool: ...
     def __float__(self) -> float: ...
     def __int__(self) -> int: ...
-    def __ne__(self, __value: Union[bool, int, float, str, Color, ActorAttribute]) -> bool: ...
+    def __ne__(self, other: Union[bool, float, str, Color, ActorAttribute], /) -> bool: ...
     def __nonzero__(self) -> bool: ...
     def __str__(self) -> str: ...
     # endregion
 
+class ActorAttributeType(int, _CarlaEnum):
+    """CARLA provides a library of blueprints for actors in `carla.BlueprintLibrary` with different attributes each. This class defines the types those at `carla.ActorAttribute` can be as a series of enum. All this information is managed internally and listed here for a better comprehension of how CARLA works."""
 
-class ActorAttributeType(int, __CarlaEnum):
-    """CARLA provides a library of blueprints for actors in `carla.BlueprintLibrary` with different attributes each. This class defines the types those at `carla.ActorAttribute` can be as a series of enum. All this information is managed internally and listed here for a better comprehension of how CARLA works.
-    """
     # region Instance Variables
     Bool = 0
     Int = 1
@@ -421,17 +487,16 @@ class ActorAttributeType(int, __CarlaEnum):
     RGBColor = 4
     # endregion
 
-
-class ActorBlueprint():
-    """CARLA provides a blueprint library for actors that can be consulted through `carla.BlueprintLibrary`. Each of these consists of an identifier for the blueprint and a series of attributes that may be modifiable or not. This class is the intermediate step between the library and the actor creation. Actors need an actor blueprint to be spawned. These store the information for said blueprint in an object with its attributes and some tags to categorize them. The user can then customize some attributes and eventually spawn the actors through `carla.World`.
-    """
+class ActorBlueprint:
+    """CARLA provides a blueprint library for actors that can be consulted through `carla.BlueprintLibrary`. Each of these consists of an identifier for the blueprint and a series of attributes that may be modifiable or not. This class is the intermediate step between the library and the actor creation. Actors need an actor blueprint to be spawned. These store the information for said blueprint in an object with its attributes and some tags to categorize them. The user can then customize some attributes and eventually spawn the actors through `carla.World`."""
 
     # region Instance Variables
     @property
     def id(self) -> str:
         """The identifier of said blueprint inside the library.
 
-        E.g. `walker.pedestrian.0001`."""
+        E.g. `walker.pedestrian.0001`.
+        """
 
     @property
     def tags(self) -> list[str]:
@@ -516,43 +581,42 @@ class ActorBlueprint():
     def __str__(self) -> str: ...
     # endregion
 
-
-class ActorList():
+class ActorList(Generic[__Actor]):
     """
     A class that contains every actor present on the scene and provides access to them.
     The list is automatically created and updated by the server and it can be returned using `carla.World`.
     """
 
     # region Methods
-    def filter(self, wildcard_pattern: str) -> ActorList:
+    def filter(self, wildcard_pattern: str) -> ActorList[__Actor]:
         """Filters a list of Actors matching wildcard_pattern against their variable `type_id` (which identifies the blueprint used to spawn them). Matching follows fnmatch standard.
 
         Args:
             `wildcard_pattern (str)`\n
 
         Returns:
-            `ActorList`\n
+            `ActorList`
         """
         ...
 
-    def find(self, actor_id: int) -> Actor:
+    def find(self, actor_id: int) -> __Actor:
         """Finds an actor using its identifier and returns it or None if it is not present.
 
         Args:
             `actor_id (int)`\n
 
         Returns:
-            `Actor`\n
+            `Actor`
         """
         ...
     # endregion
 
     # region Dunder methods
-    def __getitem__(self, pos: int) -> Actor:
+    def __getitem__(self, pos: int) -> __Actor:
         """Returns the actor corresponding to pos position in the list."""
         ...
 
-    def __iter__(self) -> Iterator[Actor]:
+    def __iter__(self) -> Iterator[__Actor]:
         """Iterate over the `carla.Actor` contained in the list."""
         ...
 
@@ -565,9 +629,10 @@ class ActorList():
         ...
     # endregion
 
-
-class ActorSnapshot():
-    """A class that comprises all the information for an actor at a certain moment in time. These objects are contained in a `carla.WorldSnapshot` and sent to the client once every tick.
+class ActorSnapshot:
+    """
+    A class that comprises all the information for an actor at a certain moment in time.
+    These objects are contained in a `carla.WorldSnapshot` and sent to the client once every tick.
     """
 
     # region Instance Variables
@@ -940,13 +1005,16 @@ class Client():
             `duration (float  - seconds)`: Time that will be reenacted using the information `name` file. If the end is reached, the simulation will continue.\n
             `follow_id (int)`: ID of the actor to follow. If this is 0 then camera is disabled.\n
             `replay_sensors (bool)`: Flag to enable or disable the spawn of sensors during playback.\n
+
+        Returns:
+            Logging information.
         """
 
     def request_file(self, name: str):
         """Requests one of the required files returned by `carla.Client.get_required_files`.
 
         Args:
-            `name (str)`: Name of the file you are requesting.\n
+            `name (str)`: Name of the file you are requesting.
         """
 
     def show_recorder_actors_blocked(self, filename: str, min_time: float, min_distance: float) -> str:
