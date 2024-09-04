@@ -5,25 +5,15 @@
 // For a copy, see <https://opensource.org/licenses/MIT>.
 
 #include "carla/streaming/detail/tcp/Client.h"
-
+#include "carla/streaming/detail/tcp/Util.h"
 #include "carla/BufferPool.h"
 #include "carla/Debug.h"
 #include "carla/Exception.h"
 #include "carla/Logging.h"
 #include "carla/Time.h"
-
-#include <boost/asio/connect.hpp>
-#include <boost/asio/read.hpp>
-#include <boost/asio/write.hpp>
-#include <boost/asio/post.hpp>
-#include <boost/asio/bind_executor.hpp>
-
 #include <exception>
 
-namespace carla {
-namespace streaming {
-namespace detail {
-namespace tcp {
+namespace carla::streaming::detail::tcp {
 
   // ===========================================================================
   // -- IncomingMessage --------------------------------------------------------
@@ -164,8 +154,11 @@ namespace tcp {
   }
 
   void Client::ReadData() {
+
+    const bool UseFuture = true;
+
     auto self = shared_from_this();
-    boost::asio::post(_strand, [this, self]() {
+    PostWrapper(UseFuture, _strand, [this, self, UseFuture]() {
       if (_done) {
         return;
       }
@@ -174,7 +167,7 @@ namespace tcp {
 
       auto message = std::make_shared<IncomingMessage>(_buffer_pool->Pop());
 
-      auto handle_read_data = [this, self, message](boost::system::error_code ec, size_t DEBUG_ONLY(bytes)) {
+      auto handle_read_data = [this, self, message, UseFuture](boost::system::error_code ec, size_t DEBUG_ONLY(bytes)) {
         DEBUG_ONLY(log_debug("streaming client: Client::ReadData.handle_read_data", bytes, "bytes"));
         if (!ec) {
           DEBUG_ASSERT_EQ(bytes, message->size());
@@ -182,7 +175,7 @@ namespace tcp {
           // Move the buffer to the callback function and start reading the next
           // piece of data.
           // log_debug("streaming client: success reading data, calling the callback");
-          boost::asio::post(_strand, [self, message]() { self->_callback(message->pop()); });
+          PostWrapper(UseFuture, _strand, [self, message]() { self->_callback(message->pop()); });
           ReadData();
         } else {
           // As usual, if anything fails start over from the very top.
@@ -191,7 +184,7 @@ namespace tcp {
         }
       };
 
-      auto handle_read_header = [this, self, message, handle_read_data](
+      auto handle_read_header = [this, self, message, handle_read_data, UseFuture](
           boost::system::error_code ec,
           size_t DEBUG_ONLY(bytes)) {
         DEBUG_ONLY(log_debug("streaming client: Client::ReadData.handle_read_header", bytes, "bytes"));
@@ -202,10 +195,12 @@ namespace tcp {
           }
           // Now that we know the size of the coming buffer, we can allocate our
           // buffer and start putting data into it.
-          boost::asio::async_read(
-              _socket,
-              message->buffer(),
-              boost::asio::bind_executor(_strand, handle_read_data));
+          AsyncReadWrapper(
+            UseFuture,
+            _strand,
+            _socket,
+            message->buffer(),
+            std::move(handle_read_data));
         } else if (!_done) {
           log_debug("streaming client: failed to read header:", ec.message());
           DEBUG_ONLY(log_debug("size  = ", message->size()));
@@ -215,14 +210,13 @@ namespace tcp {
       };
 
       // Read the size of the buffer that is coming.
-      boost::asio::async_read(
-          _socket,
-          message->size_as_buffer(),
-          boost::asio::bind_executor(_strand, handle_read_header));
+      AsyncReadWrapper(
+        UseFuture,
+        _strand,
+        _socket,
+        message->size_as_buffer(),
+        std::move(handle_read_header));
     });
   }
 
-} // namespace tcp
-} // namespace detail
-} // namespace streaming
-} // namespace carla
+} // namespace carla::streaming::detail::tcp

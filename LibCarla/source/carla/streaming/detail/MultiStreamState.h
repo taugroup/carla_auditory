@@ -32,13 +32,19 @@ namespace detail {
       _session(nullptr)
       {};
 
-    template <typename... Buffers>
-    void Write(Buffers... buffers) {
+    template <bool Sync = false, typename... Buffers>
+    void Write(Buffers... buffers)
+    {
+      std::atomic_size_t sync_counter;
+      auto sync_counter_ptr = Sync ? &sync_counter : nullptr;
+
       // try write single stream
       auto session = _session.load();
       if (session != nullptr) {
+        if constexpr (Sync)
+          (void)sync_counter.fetch_add(1, std::memory_order::release);
         auto message = Session::MakeMessage(buffers...);
-        session->Write(std::move(message));
+        session->WriteWithCounter(sync_counter_ptr, std::move(message));
         log_debug("sensor ", session->get_stream_id()," data sent");
         // Return here, _session is only valid if we have a
         // single session.
@@ -46,14 +52,30 @@ namespace detail {
       }
 
       // try write multiple stream
-      std::scoped_lock<std::mutex> lock(_mutex);
-      if (_sessions.size() > 0) {
-        auto message = Session::MakeMessage(buffers...);
-        for (auto &s : _sessions) {
-          if (s != nullptr) {
-            s->Write(message);
-            log_debug("sensor ", s->get_stream_id()," data sent ");
-         }
+      {
+        std::scoped_lock lock(_mutex);
+        if constexpr (Sync)
+          (void)sync_counter.fetch_add(_sessions.size(), std::memory_order::release);
+        if (_sessions.size() > 0)
+        {
+          auto message = Session::MakeMessage(buffers...);
+          for (auto &s : _sessions) {
+            if (s != nullptr) {
+              s->WriteWithCounter(sync_counter_ptr, message);
+              log_debug("sensor ", s->get_stream_id()," data sent ");
+           }
+          }
+        }
+      }
+
+      if constexpr (Sync)
+      {
+        for (;;)
+        {
+          auto last = sync_counter.load(std::memory_order::acquire);
+          if (last == 0)
+            break;
+          sync_counter.wait(last, std::memory_order::acquire);
         }
       }
     }
@@ -80,7 +102,7 @@ namespace detail {
 
     void ConnectSession(std::shared_ptr<Session> session) final {
       DEBUG_ASSERT(session != nullptr);
-      std::scoped_lock<std::mutex> lock(_mutex);
+      std::scoped_lock lock(_mutex);
       _sessions.emplace_back(std::move(session));
       log_debug("Connecting multistream sessions:", _sessions.size());
       if (_sessions.size() == 1) {
@@ -93,7 +115,7 @@ namespace detail {
 
     void DisconnectSession(std::shared_ptr<Session> session) final {
       DEBUG_ASSERT(session != nullptr);
-      std::scoped_lock<std::mutex> lock(_mutex);
+      std::scoped_lock lock(_mutex);
       log_debug("Calling DisconnectSession for ", session->get_stream_id());
       if (_sessions.size() == 0) return;
       if (_sessions.size() == 1) {
@@ -117,7 +139,7 @@ namespace detail {
     }
 
     void ClearSessions() final {
-      std::scoped_lock<std::mutex> lock(_mutex);
+      std::scoped_lock lock(_mutex);
       for (auto &s : _sessions) {
         if (s != nullptr) {
           s->Close();

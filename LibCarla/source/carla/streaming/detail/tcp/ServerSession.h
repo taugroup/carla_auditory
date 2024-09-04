@@ -64,21 +64,52 @@ namespace tcp {
       return _stream_id;
     }
 
+    inline static auto&& MakeMessage(
+      std::shared_ptr<const Message>&& message)
+    {
+      return std::move(message);
+    }
+
     template <typename... Buffers>
-    static auto MakeMessage(Buffers... buffers) {
-      static_assert(
-          are_same<SharedBufferView, Buffers...>::value,
-          "This function only accepts arguments of type BufferView.");
-      return std::make_shared<const Message>(buffers...);
+    static auto MakeMessage(Buffers&&... buffers)
+    {
+      if constexpr (
+        sizeof...(Buffers) == 1 &&
+        are_same<std::shared_ptr<const Message>, std::remove_reference_t<Buffers>...>::value)
+      {
+        return std::forward<Buffers...>(buffers...);
+      }
+      else
+      {
+        static_assert(
+            are_same<SharedBufferView, std::remove_reference_t<Buffers>...>::value,
+            "This function only accepts arguments of type BufferView.");
+        return std::make_shared<const Message>(
+          std::forward<Buffers>(buffers)...);
+      }
     }
 
     /// Writes some data to the socket.
-    void Write(std::shared_ptr<const Message> message);
+    void WriteOne(
+      std::shared_ptr<const Message> message,
+      std::atomic_size_t* sync_counter = nullptr);
 
     /// Writes some data to the socket.
     template <typename... Buffers>
-    void Write(Buffers... buffers) {
-      Write(MakeMessage(buffers...));
+    requires (sizeof...(Buffers) > 1)
+    void Write(
+      Buffers&&... buffers)
+    {
+      WriteOne(MakeMessage(std::forward<Buffers>(buffers)...));
+    }
+
+    /// Writes some data to the socket.
+    template <typename... Buffers>
+    void WriteWithCounter(
+      std::atomic_size_t* sync_counter,
+      Buffers&&... buffers)
+    {
+      WriteOne(MakeMessage(std::forward<Buffers>(buffers)...), sync_counter);
     }
 
     /// Post a job to close the session.
