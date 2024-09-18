@@ -14,7 +14,7 @@
 # Should only trigger for class name used in itself
 # pylint: disable=undefined-variable
 #
-# ruff: noqa: F401,F405,F403
+# ruff: noqa: F401,F403,F405
 # -------------------------------
 
 import sys
@@ -105,8 +105,8 @@ class _CarlaEnum(Enum):
         """The value attribute is not available in CARLA's enums."""
 
     def __init_subclass__(cls) -> None:
-        cls.values: dict[int, cls]  # noqa: B032
-        cls.names: dict[str, cls]  # noqa: B032
+        cls.values: dict[int, Self]  # noqa: B032
+        cls.names: dict[str, Self]  # noqa: B032
 
 # pylint: disable=function-redefined
 class AckermannControllerSettings:
