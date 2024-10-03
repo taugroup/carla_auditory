@@ -34,8 +34,30 @@ elseif (${ARCH} STREQUAL "aarch64")
 endif()
 
 set (
+	UE_SYSROOT_BASE
+	${UE_ROOT}/Engine/Extras/ThirdPartyNotUE/SDKs/HostLinux/Linux_x64
+)
+
+file (
+	GLOB
+	UE_SYSROOT_CANDIDATES
+	FOLLOW_SYMLINKS
+	LIST_DIRECTORIES TRUE
+	${UE_SYSROOT_BASE}/v*_clang-*.*.*-*/${TARGET_TRIPLE}
+)
+
+message (STATUS "UE_SYSROOT_CANDIDATES: ${UE_SYSROOT_CANDIDATES}")
+
+list (
+	GET
+	UE_SYSROOT_CANDIDATES
+	0
+	UE_SYSROOT_CANDIDATE
+)
+
+set (
 	UE_SYSROOT
-	${UE_ROOT}/Engine/Extras/ThirdPartyNotUE/SDKs/HostLinux/Linux_x64/v22_clang-16.0.6-centos7/${TARGET_TRIPLE}
+	${UE_SYSROOT_CANDIDATE}
 	CACHE PATH ""
 )
 
