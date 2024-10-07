@@ -20,6 +20,7 @@
  * Added V2X sensors for cooperative awareness message and custom user-defined messages to support vehicle-to-vehicle communication
  * Added named tuples for BasicAgent.py's detection result to allow for type-hints and better semantics.
  * Added type-hint support for the PythonAPI
+ * carla.ad subpackages are now directly importable and are not directly importable anymore (e.g. import ad)
 
 
 ## CARLA 0.9.15
