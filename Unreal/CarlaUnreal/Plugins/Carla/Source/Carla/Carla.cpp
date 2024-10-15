@@ -11,10 +11,25 @@
 DEFINE_LOG_CATEGORY(LogCarla);
 DEFINE_LOG_CATEGORY(LogCarlaServer);
 
+static const TCHAR* flags[] =
+{
+#define DEF(name) TEXT(name),
+#include "RTFlags.def"
+#undef DEF
+};
+
 void FCarlaModule::StartupModule()
 {
 	RegisterSettings();
 	LoadChronoDll();
+	for (auto flag : flags)
+	{
+		auto cv = IConsoleManager::Get().FindConsoleVariable(flag);
+		if (cv)
+		{
+			UE_LOG(LogCarla, Log, TEXT("%s = %i"), flag, cv->GetInt());
+		}
+	}
 }
 
 void FCarlaModule::LoadChronoDll()
