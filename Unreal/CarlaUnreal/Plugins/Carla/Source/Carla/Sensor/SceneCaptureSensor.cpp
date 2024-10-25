@@ -572,6 +572,14 @@ float ASceneCaptureSensor::GetShadowContrastScale() const
 void ASceneCaptureSensor::UpdatePostProcessConfig(
     FPostProcessConfig& InOutPostProcessConfig)
 {
+  auto RTCV = IConsoleManager::Get().FindConsoleVariable(TEXT("r.RayTracing"));
+  auto EnableRT = RTCV->GetInt() != 0;
+  if (!EnableRT)
+  {
+    CaptureComponent2D->ShowFlags.EnableAdvancedFeatures();
+    CaptureComponent2D->ShowFlags.SetAmbientOcclusion(true);
+    CaptureComponent2D->ShowFlags.SetMotionBlur(true);
+  }
 }
 
 bool ASceneCaptureSensor::ApplyPostProcessVolumeToSensor(APostProcessVolume* Origin, ASceneCaptureSensor* Dest, bool bOverrideCurrentCamera)
@@ -890,40 +898,54 @@ namespace SceneCaptureSensor_local_ns {
     PostProcessSettings.bOverride_LocalExposureHighlightContrastScale = true;
     PostProcessSettings.bOverride_LocalExposureShadowContrastScale = true;
 
-    CaptureComponent2D.bUseRayTracingIfEnabled = true;
     PostProcessSettings.bOverride_DynamicGlobalIlluminationMethod = true;
-    PostProcessSettings.DynamicGlobalIlluminationMethod = EDynamicGlobalIlluminationMethod::Lumen;
-    PostProcessSettings.bOverride_LumenSceneLightingQuality = true;
-    PostProcessSettings.LumenSceneLightingQuality = 1.0f;
-    PostProcessSettings.bOverride_LumenSceneDetail = true;
-    PostProcessSettings.LumenSceneDetail = 1.0f;
-    PostProcessSettings.bOverride_LumenSceneViewDistance = true;
-    PostProcessSettings.LumenSceneViewDistance = 20000.0f;
-    PostProcessSettings.bOverride_LumenFinalGatherQuality = true;
-    PostProcessSettings.LumenFinalGatherQuality = 1.0f;
-    PostProcessSettings.bOverride_LumenMaxTraceDistance = true;
-    PostProcessSettings.LumenMaxTraceDistance = 20000.0f;
-    PostProcessSettings.bOverride_LumenSurfaceCacheResolution = true;
-    PostProcessSettings.LumenSurfaceCacheResolution = 1.0f;
-    PostProcessSettings.bOverride_LumenSceneLightingUpdateSpeed = true;
-    PostProcessSettings.LumenSceneLightingUpdateSpeed = 1.0f;
-    PostProcessSettings.bOverride_LumenFinalGatherLightingUpdateSpeed = true;
-    PostProcessSettings.LumenFinalGatherLightingUpdateSpeed = 1.0f;
-    PostProcessSettings.bOverride_LumenDiffuseColorBoost = true;
-    PostProcessSettings.LumenDiffuseColorBoost = 1.0f;
-    PostProcessSettings.bOverride_LumenSkylightLeaking = true;
-    PostProcessSettings.LumenSkylightLeaking = 0.1f;
-    PostProcessSettings.bOverride_LumenFullSkylightLeakingDistance = true;
-    PostProcessSettings.LumenFullSkylightLeakingDistance = 1000.0f;
     PostProcessSettings.bOverride_ReflectionMethod = true;
-    PostProcessSettings.ReflectionMethod = EReflectionMethod::Lumen;
+    PostProcessSettings.bOverride_LumenSceneLightingQuality = true;
+    PostProcessSettings.bOverride_LumenSceneDetail = true;
+    PostProcessSettings.bOverride_LumenSceneViewDistance = true;
+    PostProcessSettings.bOverride_LumenFinalGatherQuality = true;
+    PostProcessSettings.bOverride_LumenMaxTraceDistance = true;
+    PostProcessSettings.bOverride_LumenSurfaceCacheResolution = true;
+    PostProcessSettings.bOverride_LumenSceneLightingUpdateSpeed = true;
+    PostProcessSettings.bOverride_LumenFinalGatherLightingUpdateSpeed = true;
+    PostProcessSettings.bOverride_LumenDiffuseColorBoost = true;
+    PostProcessSettings.bOverride_LumenSkylightLeaking = true;
+    PostProcessSettings.bOverride_LumenFullSkylightLeakingDistance = true;
     PostProcessSettings.bOverride_LumenReflectionQuality = true;
-    PostProcessSettings.LumenReflectionQuality = 1.0f;
     PostProcessSettings.bOverride_LumenRayLightingMode = true;
-    PostProcessSettings.LumenRayLightingMode = ELumenRayLightingModeOverride::Default;
     PostProcessSettings.bOverride_LumenFrontLayerTranslucencyReflections = true;
-    PostProcessSettings.LumenFrontLayerTranslucencyReflections = true;
     PostProcessSettings.bOverride_LumenMaxReflectionBounces = true;
-    PostProcessSettings.LumenMaxReflectionBounces = 3;
+
+    auto RTCV = IConsoleManager::Get().FindConsoleVariable(TEXT("r.RayTracing"));
+    auto EnableRT = RTCV->GetInt() != 0;
+
+    if (EnableRT)
+    {
+      CaptureComponent2D.bUseRayTracingIfEnabled = true;
+      PostProcessSettings.DynamicGlobalIlluminationMethod = EDynamicGlobalIlluminationMethod::Lumen;
+      PostProcessSettings.ReflectionMethod = EReflectionMethod::Lumen;
+      
+      PostProcessSettings.LumenSceneLightingQuality = 1.0f;
+      PostProcessSettings.LumenSceneDetail = 1.0f;
+      PostProcessSettings.LumenSceneViewDistance = 20000.0f;
+      PostProcessSettings.LumenFinalGatherQuality = 1.0f;
+      PostProcessSettings.LumenMaxTraceDistance = 20000.0f;
+      PostProcessSettings.LumenSurfaceCacheResolution = 1.0f;
+      PostProcessSettings.LumenSceneLightingUpdateSpeed = 1.0f;
+      PostProcessSettings.LumenFinalGatherLightingUpdateSpeed = 1.0f;
+      PostProcessSettings.LumenDiffuseColorBoost = 1.0f;
+      PostProcessSettings.LumenSkylightLeaking = 0.1f;
+      PostProcessSettings.LumenFullSkylightLeakingDistance = 1000.0f;
+      PostProcessSettings.LumenReflectionQuality = 1.0f;
+      PostProcessSettings.LumenRayLightingMode = ELumenRayLightingModeOverride::Default;
+      PostProcessSettings.LumenFrontLayerTranslucencyReflections = true;
+      PostProcessSettings.LumenMaxReflectionBounces = 3;
+    }
+    else
+    {
+      CaptureComponent2D.bUseRayTracingIfEnabled = false;
+      PostProcessSettings.DynamicGlobalIlluminationMethod = EDynamicGlobalIlluminationMethod::ScreenSpace;
+      PostProcessSettings.ReflectionMethod = EReflectionMethod::ScreenSpace;
+    }
   }
 } // namespace SceneCaptureSensor_local_ns
