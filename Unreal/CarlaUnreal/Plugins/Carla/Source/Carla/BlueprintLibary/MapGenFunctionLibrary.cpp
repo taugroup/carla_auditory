@@ -239,8 +239,9 @@ void UMapGenFunctionLibrary::CleanupGEngine(){
 #endif
 }
 
-void UMapGenFunctionLibrary::ChangeStaticMeshesInTheLevelForInstancedStaticMeshes(UWorld* World, TArray<UStaticMesh*> Filter, int MinNumOfInstancesToBeChanged)
+TArray<AInstancedStaticMeshActor*> UMapGenFunctionLibrary::ChangeStaticMeshesInTheLevelForInstancedStaticMeshes(UWorld* World, TArray<UStaticMesh*> Filter, int MinNumOfInstancesToBeChanged)
 {
+  TArray<AInstancedStaticMeshActor*> Result;
   TArray<AActor*> FoundActors;
   UGameplayStatics::GetAllActorsOfClass(World,  AStaticMeshActor::StaticClass(), FoundActors);
   TMap<UStaticMesh*, TArray<AStaticMeshActor*>> ActorsToCheckIfReplacedMap;
@@ -272,16 +273,19 @@ void UMapGenFunctionLibrary::ChangeStaticMeshesInTheLevelForInstancedStaticMeshe
       {
         InstancedStaticMeshActor->GetInstancedStaticMeshComponent()->SetStaticMesh(CurrentPair.Key);
         InstancedStaticMeshActor->GetInstancedStaticMeshComponent()->AddInstances(TransformsToBeInstanced, false, true);
+        Result.Add(InstancedStaticMeshActor);
       }
     }
   }
+
+  return Result;
 }
 
-void UMapGenFunctionLibrary::RevertStaticMeshesInTheLevelForInstancedStaticMeshes(UWorld* World, TArray<UStaticMesh*> Filter)
+TArray<AStaticMeshActor*> UMapGenFunctionLibrary::RevertStaticMeshesInTheLevelForInstancedStaticMeshes(UWorld* World, TArray<UStaticMesh*> Filter)
 {
   TArray<AActor*> FoundActors;
+  TArray<AStaticMeshActor*> Result;
   UGameplayStatics::GetAllActorsOfClass(World,  AInstancedStaticMeshActor::StaticClass(), FoundActors);
-
   for(AActor* CurrentActor : FoundActors )
   {
     AInstancedStaticMeshActor* InstancedStaticMeshActor = Cast<AInstancedStaticMeshActor>(CurrentActor);
@@ -296,9 +300,12 @@ void UMapGenFunctionLibrary::RevertStaticMeshesInTheLevelForInstancedStaticMeshe
           AStaticMeshActor* StaticMeshActor = World->SpawnActor<AStaticMeshActor>();
           StaticMeshActor->GetStaticMeshComponent()->SetStaticMesh(CurrentStaticMesh);
           StaticMeshActor->SetActorTransform(FTransform(CurrentInstanceData.Transform));
+          Result.Add(StaticMeshActor);
         }
         InstancedStaticMeshActor->Destroy();
       }
     }
   }
+
+  return Result;
 }
