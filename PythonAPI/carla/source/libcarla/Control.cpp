@@ -585,6 +585,11 @@ void export_control() {
     .def(self_ns::str(self_ns::self))
   ;
 
+  class_<std::vector<carla::rpc::WheelTelemetryData> >("vector_of_wheels_telemetry")
+    .def(vector_indexing_suite<std::vector<carla::rpc::WheelTelemetryData> >())
+    .def(self_ns::str(self_ns::self))
+  ;
+
   class_<cr::WheelTelemetryData>("WheelTelemetryData")
     .def(init<float, float, float, float, float, float, float, float, float, float, float>(
         (arg("tire_friction")=0.0f,
