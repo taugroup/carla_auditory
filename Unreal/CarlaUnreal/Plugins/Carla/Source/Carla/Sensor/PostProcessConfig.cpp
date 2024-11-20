@@ -16,7 +16,7 @@ void FPostProcessConfig::EnablePostProcessingEffects()
   EngineShowFlags.SetGrain(true);
   EngineShowFlags.SetSeparateTranslucency(true);
   EngineShowFlags.SetScreenSpaceReflections(true);
-  // EngineShowFlags.SetTemporalAA(true);
+  EngineShowFlags.SetTemporalAA(true);
   EngineShowFlags.SetAmbientOcclusion(true);
   EngineShowFlags.SetIndirectLightingCache(true);
   EngineShowFlags.SetLightShafts(true);
