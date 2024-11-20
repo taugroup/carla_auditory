@@ -7,23 +7,23 @@
 void FPostProcessConfig::EnablePostProcessingEffects()
 {
   // This block of code {
-  EngineShowFlags.SetLensFlares(true);
-  EngineShowFlags.SetEyeAdaptation(true);
-  EngineShowFlags.SetColorGrading(true);
-  EngineShowFlags.SetCameraImperfections(true);
-  EngineShowFlags.SetDepthOfField(true);
-  EngineShowFlags.SetVignette(true);
-  EngineShowFlags.SetGrain(true);
-  EngineShowFlags.SetSeparateTranslucency(true);
-  EngineShowFlags.SetScreenSpaceReflections(true);
-  EngineShowFlags.SetTemporalAA(true);
-  EngineShowFlags.SetAmbientOcclusion(true);
-  EngineShowFlags.SetIndirectLightingCache(true);
-  EngineShowFlags.SetLightShafts(true);
-  EngineShowFlags.SetPostProcessMaterial(true);
-  EngineShowFlags.SetDistanceFieldAO(true);
+  // EngineShowFlags.SetLensFlares(true);
+  // EngineShowFlags.SetEyeAdaptation(true);
+  // EngineShowFlags.SetColorGrading(true);
+  // EngineShowFlags.SetCameraImperfections(true);
+  // EngineShowFlags.SetDepthOfField(true);
+  // EngineShowFlags.SetVignette(true);
+  // EngineShowFlags.SetGrain(true);
+  // EngineShowFlags.SetSeparateTranslucency(true);
+  // EngineShowFlags.SetScreenSpaceReflections(true);
+  // EngineShowFlags.SetTemporalAA(true);
+  // EngineShowFlags.SetAmbientOcclusion(true);
+  // EngineShowFlags.SetIndirectLightingCache(true);
+  // EngineShowFlags.SetLightShafts(true);
+  // EngineShowFlags.SetPostProcessMaterial(true);
+  // EngineShowFlags.SetDistanceFieldAO(true);
   // } must be kept in sync with EngineShowFlags.EnableAdvancedFeatures(), AND activate Lumen.
-  EngineShowFlags.SetMotionBlur(true);
+  // EngineShowFlags.SetMotionBlur(true);
 }
 
 void FPostProcessConfig::DisablePostProcessingEffects()
