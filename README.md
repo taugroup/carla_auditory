@@ -1,3 +1,6 @@
+This is a modified repo of the Carla Simulator, from the Jan 8th, 2025 version of the original Carla Repository https://github.com/carla-simulator/carla. This repository aims to add auditory systems to the Carla simulation enviornment for testing auditory perception in autonomous vehicles. 
+
+
 CARLA Simulator
 ===============
 
