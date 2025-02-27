@@ -40,6 +40,29 @@ For installing our contributions:
    ```
    pip install -r carla-root/PythonAPI/examples/requirements.txt
    ```
+   
+## Usage
+
+1. Add follow_pawn asset to scene:
+   ```
+   Drag and drop follow_pawn.uasset to unreal world that you wish
+   to enable auditory perception in
+   ```
+
+2. Spawn Ego Vehicle in World:
+   ```
+   python automatic_control_siren.py
+   ```
+   
+3. Enable Camera Follow
+   ```
+   In the Unreal Editor viewport click follow car button on bottom left of viewport
+   ```
+
+4. Spawn Ambulance with sound:
+   ```
+   python ambulance-spawn.py
+   ```
 
 ## Future Improvements
 
