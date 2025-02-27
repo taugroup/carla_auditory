@@ -21,70 +21,25 @@ This repository contains a proof-of-concept implementation for integrating real-
 - PyGame
 - NumPy
 - SciPy
+- Ubuntu (tested on version 20.04)
 
 ## Installation
 
-1. Clone this repository:
+For specific instructions on building carla please refer to https://carla.readthedocs.io/en/latest/build_carla/. 
+
+For installing our contributions:
+
+1. Move contents of TEMP-CONTENT into carla files:
    ```
-   git clone https://github.com/taugroup/carla.git
-   cd carla
+   sounds folder -> carla-root/Unreal/CarlaUE4/Content/Carla 
+   Ambulance -> carla-root/Unreal/CarlaUE4/Content/Carla/Blueprints/Vehicles (replace or rename the existing ambulance folder)
+   followButton.uasset & follow_pawn.uasset -> carla-root/Unreal/CarlaUE4/Content/Carla/Game/ (place assets in folder)
    ```
 
 2. Install the required Python packages:
    ```
-   pip install -r requirements.txt
+   pip install -r carla-root/PythonAPI/examples/requirements.txt
    ```
-
-3. Import the modified vehicle assets into your CARLA installation:
-   ```
-   cd /path/to/carla
-   ./ImportAssets.sh /path/to/downloaded/assets.tar.gz
-   ```
-
-## Speaker Configuration
-
-Before running the simulation, you need to identify the correct speaker output:
-
-1. Manually: Check each connected speaker to determine which one is used for simulation output
-2. Automatically: Use the provided script to cycle through available speakers
-   ```
-   python find_speaker.py
-   ```
-3. Note the speaker ID for use in the simulation
-
-## Usage
-
-1. Start the CARLA server:
-   ```
-   ./CarlaUE4.sh -quality-level=Low
-   ```
-
-2. Run the auditory perception client:
-   ```
-   python auditory_client.py --speaker-id YOUR_SPEAKER_ID
-   ```
-
-3. The simulation will start with an ego vehicle that can detect emergency sirens and pull over when necessary.
-
-## Data Generation
-
-This repository can also be used to generate training data for more sophisticated audio classification models:
-
-1. Enable recording in the client script:
-   ```
-   python auditory_client.py --speaker-id YOUR_SPEAKER_ID --record
-   ```
-
-2. Recorded audio clips will be saved in the `recordings` directory.
-
-## Model Training
-
-The SVM classification model was trained using:
-- Emergency Vehicle Siren Sounds dataset by Vishnu
-- Large-Scale Dataset for Emergency Vehicle Siren and Road Noises by Dr. Muhammad Asif
-- Google's AudioSet (emergency vehicle category)
-
-To train your own model, refer to the `train_model.py` script.
 
 ## Future Improvements
 
@@ -107,6 +62,7 @@ If you use this code in your research, please cite our paper:
 ## License
 
 [MIT License](LICENSE)
+Ambulance Files under TEMP-CONTENT/Ambulance are distrubted under the CC-BY License
 
 ## Contact
 
