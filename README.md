@@ -84,8 +84,8 @@ If you use this code in your research, please cite our paper:
 
 ## License
 
-[MIT License](LICENSE)
-Ambulance Files under TEMP-CONTENT/Ambulance are distrubted under the CC-BY License
+- [MIT License](LICENSE)
+- Ambulance Files under TEMP-CONTENT/Ambulance are distrubted under the CC-BY License
 
 ## Contact
 
