@@ -111,10 +111,3 @@ If you use this code in your research, please cite our paper:
 ## Contact
 
 For questions or support, please open an issue on GitHub or contact the authors directly.
-
-Citations:
-[1] https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/15879952/f0530029-e403-49f5-be70-10e86b303308/Carla_Paper.pdf
-
----
-Answer from Perplexity: pplx.ai/share
-
