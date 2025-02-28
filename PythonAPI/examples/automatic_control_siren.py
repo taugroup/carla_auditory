@@ -87,8 +87,8 @@ from agents.navigation.basic_agent import BasicAgent  # pylint: disable=import-e
 # -- Global functions ----------------------------------------------------------
 # ==============================================================================
 
-soundDetect = False
-isSoundHeard = 1
+__soundDetectionOn__ = False
+__isSoundHeard__ = False
 
 
 def find_weather_presets():
@@ -104,63 +104,36 @@ def get_actor_display_name(actor, truncate=250):
     name = ' '.join(actor.type_id.replace('_', '.').title().split('.')[1:])
     return (name[:truncate - 1] + u'\u2026') if len(name) > truncate else name
 
-def record_2_and_classify(path, default_device=None):
-    global isSoundHeard
-    global soundDetect
+def record_2_and_classify(path, args=None):
+    global __isSoundHeard__
+    global __soundDetectionOn__
     print("Sound Detection Thread Started")
 
-
-    # Definitions used for data
     THRESHOLD = 500
     CHUNK_SIZE = 1024
     FORMAT = pyaudio.paInt16
     RATE = 48000 # this should be set by audio device choosen
     RECORD_WINDOW = 1 # seconds
+    CONFIDENCE_THRESHOLD = 0.2
     
     p = pyaudio.PyAudio()
     
-    inputNum = 0
+    inputAudioDeviceId = 0
+
+    if args.device is not None:
+        inputAudioDeviceId = args.device
     
-    if os.name == 'nt':
-        # windows system
-        print("Windows System Detected")    
-    else: 
-        # linux system
-        print("Linux-x86_64 System Detected")
-        for i in range(p.get_device_count()):
-            device_info = p.get_device_info_by_index(i)
-            if device_info['name'] == 'pulse':
-                inputNum = 11
-                RATE = int(device_info['defaultSampleRate'])
-    
-    # print(device_info)
-    #RATE = int(device_info['defaultSampleRate'])
 
-
-    # check for pulse audio for linux, or possibly make a command argument to choose mic / other audio device?
-
-    # inputNum = 11
-
-    # #info = p.get_default_input_device_info()
-    # info = p.get_device_info_by_index(inputNum)
-    # # numdevices = info.get('deviceCount')
-    # # for i in range(0, numdevices):
-    # #     if (p.get_device_info_by_index(inputNum).get('maxInputChannels')) > 0:
-    # #         print("Input Device id ", i, " - ", p.get_device_info_by_host_api_device_index(0, i).get('name'))
-    # print(info)
-    
-    # #use find_stereo to find speaker device
-    # device_info = p.get_device_info_by_index(inputNum)
-    # print(int(device_info['defaultSampleRate']))
-
-    # for i in range(p.get_device_count()):
-    #     print(p.get_device_info_by_index(i))
+    # Assumed Linux System, replace this section for Windows
+    for i in range(p.get_device_count()):
+        device_info = p.get_device_info_by_index(i)
+        if device_info['name'] == 'pulse':
+            inputAudioDeviceId = 11
+            RATE = int(device_info['defaultSampleRate'])
     
     
-    while soundDetect:
+    while __soundDetectionOn__:
 
-        # replace this with general linux / windows use
-        # if os.name == 'nt': #windows  else: 'linux-x86_64'
         stream = p.open(
                 format = FORMAT,
                 channels = 32,
@@ -168,20 +141,17 @@ def record_2_and_classify(path, default_device=None):
                 input=True,
                 output=False,
                 frames_per_buffer=CHUNK_SIZE,
-                input_device_index=inputNum
+                input_device_index=inputAudioDeviceId
         )
         
         print(f"Started recording with sound sample of {RECORD_WINDOW} seconds")
 
         frames = []
         for i in range(0, int(RATE / CHUNK_SIZE * RECORD_WINDOW)):
-            #data = stream.read(CHUNK_SIZE, False)
             data = stream.read(CHUNK_SIZE)
             frames.append(data)
             rms = audioop.rms(data,2)
 
-
-        # print("rms " + str(rms))
         
         print('Recording Ended')
 
@@ -189,6 +159,7 @@ def record_2_and_classify(path, default_device=None):
         stream.close()
         
 
+        ### Save WAV file of Audio Clip ###
         wf = wave.open(path, 'wb')
         wf.setnchannels(2)
         wf.setsampwidth(p.get_sample_size(FORMAT))
@@ -196,20 +167,22 @@ def record_2_and_classify(path, default_device=None):
         wf.writeframes(b''.join(frames))
         wf.close()
 
-        # Calls the classification model 'svmSiren' that has the type 'svm' on the file stored at path
+        
+        ### Change this to use a different classification model ###
         result = aT.file_classification(path, 'svmSiren', 'svm')[0]
 
-        # print("result " + str(result))
+        # In our model closer to 0.0 represents siren detection 
+        if result <= CONFIDENCE_THRESHOLD:
+            result = True
+        ###--------------------------------###
 
 
-
-        ## zero means sound is heard? 
+        ## Estimation of sound distance, this can be removed or replace with a better approach for determine if sound is heard 
         if rms > 10:
-            isSoundHeard = result
+            __isSoundHeard__ = result
         else:
-            isSoundHeard = 1
+            __isSoundHeard__ = False
 
-        print(isSoundHeard)
     
     p.terminate()
     print("Sound Dectection Thread Terminiated")
@@ -349,8 +322,9 @@ class KeyboardControl(object):
         world.hud.notification("click 'A' to start emergency vehicle detection", seconds=10.0)
         self.args = args
 
+    # Why does the thread need to be killed and re-opened each time? was it to provide a short repreve between classifications?
     def parse_events(self):
-        global soundDetect
+        global __soundDetectionOn__
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return True
@@ -359,12 +333,12 @@ class KeyboardControl(object):
                     return True
                 if event.key == pygame.K_a:
                     print("Started Siren Detection")
-                    if soundDetect == False:
-                        soundDetect = True
-                        x = threading.Thread(target=record_2_and_classify, args=('clip0.wav',self.args.device),daemon=True)
-                        x.start()
+                    if __soundDetectionOn__ == False:
+                        __soundDetectionOn__ = True
+                        audio_thread = threading.Thread(target=record_2_and_classify, args=('clip0.wav',self.args),daemon=True)
+                        audio_thread.start()
                     else:
-                        soundDetect = False
+                        __soundDetectionOn__ = False
                 
 
 
@@ -408,8 +382,8 @@ class HUD(object):
         self.simulation_time = timestamp.elapsed_seconds
 
     def tick(self, world, clock):
-        global isSoundHeard
-        global soundDetect
+        global __isSoundHeard__
+        global __soundDetectionOn__
         """HUD method for every tick"""
         self._notifications.tick(world, clock)
         if not self._show_info:
@@ -426,11 +400,11 @@ class HUD(object):
         max_col = max(1.0, max(collision))
         collision = [x / max_col for x in collision]
         vehicles = world.world.get_actors().filter('vehicle.*')
-        if isSoundHeard == 0:
+        if __isSoundHeard__ == True:
             vehiclePresent = "Detected"
         else:
             vehiclePresent = "Not Detected"
-        if soundDetect == False:
+        if __soundDetectionOn__ == False:
             isDetecting = "Off (Press 'A' To Start)"
         else:
             isDetecting = "On (Press 'A' To Stop)"
@@ -844,8 +818,8 @@ def game_loop(args):
     Main loop of the simulation. It handles updating all the HUD information,
     ticking the agent and, if needed, the world.
     """
-    global isSoundHeard
-    global soundDetect
+    global __isSoundHeard__
+    global __soundDetectionOn__
 
     pygame.init()
     pygame.font.init()
@@ -884,6 +858,7 @@ def game_loop(args):
 
         clock = pygame.time.Clock()
 
+        ## Game Loop ##
         while True:
             clock.tick()
             if args.sync:
@@ -897,8 +872,8 @@ def game_loop(args):
             world.render(display)
             pygame.display.flip()
 
-
-            if(isSoundHeard == 0) :
+            # Respond to siren detection
+            if(__isSoundHeard__ == True) :
                 if(not agent.destination_set):
                     # if the destination for pull over isn't set then pull over
                     world.hud.notification("Emergency vehicle detected: pulling over", seconds=4.0)
@@ -908,16 +883,14 @@ def game_loop(args):
                 
                 control = agent.run_step()
 
-            elif(agent.ambulance): # What is the value of this? given that this isn't the ambulance why is this check needed
-                # agent.ambulance means it saw an pull_over() was called and that it saw an ambulance
-                
+            elif(agent.pulled_over):
                 if(agent.done()):
                     time.sleep(2)
                     print("Value of destination during come_back: ")
                     if(destination is None):
                         print("comeback destination none")
                     print(destination)
-                    agent.come_back(destination) # re-adds the destination of the normal road position (this path planning takes no physical possibilities of the car into question)
+                    agent.come_back(destination)
                     print('coming back...')
 
                 control = agent.run_step()
@@ -927,16 +900,14 @@ def game_loop(args):
 
 
             if agent.done():
-                if soundDetect:
+                if __soundDetectionOn__:
                     agent.add_emergency_stop(control)
-                
                     world.hud.notification("Vehicle will start again when emergency vehicle passes", seconds=4.0)
                 else:
                     agent.set_destination(random.choice(spawn_points).location)
                     world.hud.notification("The target has been reached, searching for another target", seconds=4.0)
                     print("The target has been reached, searching for another target")
 
-            #control = agent.run_step()
             control.manual_gear_shift = False 
             world.player.apply_control(control)
 
@@ -1019,6 +990,7 @@ def main():
         help='Set audio device id to sample from (default: search for appropriate device)',
         default=None,
         type=int)
+    
 
     args = argparser.parse_args()
 

@@ -1,0 +1,11 @@
+future
+numpy; python_version < '3.0'
+numpy==1.18.4; python_version >= '3.0'
+pygame
+matplotlib
+Pillow
+pyaudio
+six
+invertedai@git+https://github.com/inverted-ai/invertedai.git@develop
+scikit-learn
+open3d

@@ -47,7 +47,7 @@ def main():
 
         world = client.get_world()
         ambulance = None
-        # Can be extended to take in a generic valid blueprint
+        ### Change this here to choose a different vehicle ###
         ambulance_bp = world.get_blueprint_library().find('vehicle.ford.ambulance')
         ambulance_bp.set_attribute('role_name','autopilot')
         print('\Ambulance role_name is set')
@@ -61,21 +61,17 @@ def main():
         else:
             ambulance_bp.set_attribute('role_name', 'autopilot')
         print('\nColor is set')
-        #ambulance_bp.set_autopilot(enabled=True,port=8000)
-        #SetAutopilot(ambulance_bp, True, port=8000)
+
         batch = []
-        # Set Autopilot
         
         spawn_points = world.get_map().get_spawn_points()
 
-        # Would it be better for it to be consistent rather than random
+        ### Randomly select a spawn point
         if len(spawn_points) > 0:
             random.shuffle(spawn_points)
             transform = spawn_points[0]
             ambulance = world.spawn_actor(ambulance_bp,transform)
             
-            #if args.autopilot:
-            #vehicle.apply_control(carla.VehicleControl(throttle=0.1, brake=0.1))
             batch.append(SetAutopilot(ambulance, True))
             client.apply_batch_sync(batch)
             print('\nAmbulance is spawned')

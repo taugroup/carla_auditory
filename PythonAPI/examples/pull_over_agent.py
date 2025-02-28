@@ -67,13 +67,13 @@ class PullOverAgent(object):
         self._world = self._vehicle.get_world()
         self._map = self._world.get_map()
         self._last_traffic_light = None
-        self.ambulance = False
+        self.pulled_over = False
         self.noticed = False
         self.location = self._vehicle.get_location()
 
         self.destination_set = False
 
-        self.startTime =0
+        self.startTime = 0
         self.endTime1 = 0
         self.endTime2 = 0
 
@@ -412,12 +412,12 @@ class PullOverAgent(object):
         self.location = dest
 
         self.set_destination(dest,None,True)
-        self.ambulance = True
+        self.pulled_over = True
         self.destination_set = True
 
     def come_back(self, destination):
 
         self.set_destination(destination)
-        self.ambulance = False
+        self.pulled_over = False
         self.destination_set = False
 
