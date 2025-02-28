@@ -1,158 +1,92 @@
-This is a modified repo of the Carla Simulator, from the Jan 8th, 2025 version of the original Carla Repository https://github.com/carla-simulator/carla. This repository aims to add auditory systems to the Carla simulation enviornment for testing auditory perception in autonomous vehicles. 
+# CARLA Auditory Perception System
 
-In order to properly import our changed assets to include audio, perform the following steps after getting the Carla assets form the ./Update.sh command.
+## Overview
 
-The TEMP-CONTENT folder contains the necessary files needed in order to implement audio systems in Unreal, however, they will have to be moved into the following locations after running ./Update.sh 
+This repository contains a proof-of-concept implementation for integrating real-time audio classification into autonomous vehicle systems using the CARLA simulator. Our system enables simulated autonomous vehicles to detect emergency sirens in urban environments and respond appropriately by pulling over to the right shoulder.
 
-sounds folder -> carla-root/Unreal/CarlaUE4/Content/Carla 
-Ambulance -> carla-root/Unreal/CarlaUE4/Content/Carla/Blueprints/Vehicles (replace or rename the existing ambulance folder)
-followButton.uasset & follow_pawn.uasset -> carla-root/Unreal/CarlaUE4/Content/Carla/Game/ (place assets in folder)
+## Features
 
+- 3D positional audio support in CARLA using Unreal Engine's audio system
+- Modified ambulance vehicles with realistic siren sounds, Doppler effect, and sound attenuation
+- Real-time audio classification using Support Vector Machines (SVM)
+- Autonomous pull-over behavior when emergency vehicles are detected
+- Multithreaded implementation for efficient performance
 
-CARLA Simulator
-===============
+## Requirements
 
-[![Documentation](https://readthedocs.org/projects/carla/badge/?version=latest)](http://carla.readthedocs.io) 
+- CARLA 0.9.15
+- Modified Unreal Engine 4.26 fork (for development)
+- Python 3.7+
+- PyAudioAnalysis
+- PyGame
+- NumPy
+- SciPy
+- Ubuntu (tested on version 20.04)
 
-[![carla.org](Docs/img/btn/web.png)](http://carla.org)
-[![download](Docs/img/btn/download.png)](https://github.com/carla-simulator/carla/blob/master/Docs/download.md)
-[![documentation](Docs/img/btn/docs.png)](http://carla.readthedocs.io)
-[![forum](Docs/img/btn/forum.png)](https://github.com/carla-simulator/carla/discussions)
-[![discord](Docs/img/btn/chat.png)](https://discord.gg/8kqACuC)
-[![Gurubase](https://img.shields.io/badge/Gurubase-Ask%20CARLA%20Simulator%20Guru-006BFF)](https://gurubase.io/g/carla-simulator)
+## Installation
 
-CARLA is an open-source simulator for autonomous driving research. CARLA has been developed from the ground up to support development, training, and
-validation of autonomous driving systems. In addition to open-source code and protocols, CARLA provides open digital assets (urban layouts, buildings,
-vehicles) that were created for this purpose and can be used freely. The simulation platform supports flexible specification of sensor suites and
-environmental conditions.
+For specific instructions on building carla please refer to https://carla.readthedocs.io/en/latest/build_carla/. 
 
-[![CARLA Video](Docs/img/0_9_15_thumbnail.webp)](https://www.youtube.com/watch?v=q4V9GYjA1pE )
+For installing our contributions:
 
->[!NOTE]
->This is the development branch `ue4-dev` for the **Unreal Engine 4.26 version of CARLA**. This branch exists in parallel with the Unreal Engine 5.3 version of CARLA, in the `ue5-dev` branch. Please be sure that this version of CARLA is suitable for your needs as there are significant differences between the UE 4.26 and UE 5.3 versions of CARLA. 
+1. Move contents of TEMP-CONTENT into carla files:
+   ```
+   sounds folder -> carla-root/Unreal/CarlaUE4/Content/Carla 
+   Ambulance -> carla-root/Unreal/CarlaUE4/Content/Carla/Blueprints/Vehicles (replace or rename the existing ambulance folder)
+   followButton.uasset & follow_pawn.uasset -> carla-root/Unreal/CarlaUE4/Content/Carla/Game/ (place assets in folder)
+   ```
 
-### Download CARLA
+2. Install the required Python packages:
+   ```
+   pip install -r carla-root/PythonAPI/examples/requirements.txt
+   ```
+   
+## Usage
 
-Linux:
-* [**Get CARLA overnight build**](https://tiny.carla.org/carla-latest-linux)
-* [**Get AdditionalMaps overnight build**](https://tiny.carla.org/additional-maps-latest-linux)
+1. Add follow_pawn asset to scene:
+   ```
+   Drag and drop follow_pawn.uasset to unreal world that you wish
+   to enable auditory perception in
+   ```
 
-Windows:
-* [**Get CARLA overnight build**](https://tiny.carla.org/carla-latest-windows)
-* [**Get AdditionalMaps overnight build**](https://tiny.carla.org/additional-maps-latest-windows)
+2. Spawn Ego Vehicle in World:
+   ```
+   python automatic_control_siren.py
+   ```
+   
+3. Enable Camera Follow
+   ```
+   In the Unreal Editor viewport click follow car button on bottom left of viewport
+   ```
 
->[!WARNING]
->The CARLA package downloads are now provided using the BackBlaze CDN. The Amazon Web Service download links have been discontinued. Please ensure you update any relevant information in repositories using the CARLA simulator package versions. 
+4. Spawn Ambulance with sound:
+   ```
+   python ambulance-spawn.py
+   ```
 
-### Recommended system
+## Future Improvements
 
-* Intel i7 gen 9th - 11th / Intel i9 gen 9th - 11th / AMD ryzen 7 / AMD ryzen 9
-* +32 GB RAM memory
-* NVIDIA RTX 3070 / NVIDIA RTX 3080 / NVIDIA RTX 4090
-* Ubuntu 20.04
+- Add ambient noise to create more realistic soundscapes
+- Improve classification accuracy through better algorithms and data preprocessing
+- Enhance vehicle movement during pull-over maneuvers
+- Distinguish between different types of emergency vehicles
 
-## Documentation
+## Citation
 
-The [CARLA documentation](https://carla.readthedocs.io/en/latest/) is hosted on ReadTheDocs. Please see the following key links:
-
-- [Building on Linux](https://carla.readthedocs.io/en/latest/build_linux/)
-- [Building on Windows](https://carla.readthedocs.io/en/latest/build_windows/)
-- [First steps](https://carla.readthedocs.io/en/latest/tuto_first_steps/)
-- [CARLA asset catalogue](https://carla.readthedocs.io/en/latest/catalogue/)
-- [Python API reference](https://carla.readthedocs.io/en/latest/python_api/)
-- [Blueprint library](https://carla.readthedocs.io/en/latest/bp_library/)
-
-## CARLA Ecosystem
-Repositories associated with the CARLA simulation platform:
-
-* [**CARLA Autonomous Driving leaderboard**](https://leaderboard.carla.org/): Automatic platform to validate Autonomous Driving stacks
-* [**Scenario_Runner**](https://github.com/carla-simulator/scenario_runner): Engine to execute traffic scenarios in CARLA 0.9.X
-* [**ROS-bridge**](https://github.com/carla-simulator/ros-bridge): Interface to connect CARLA 0.9.X to ROS
-* [**Driving-benchmarks**](https://github.com/carla-simulator/driving-benchmarks): Benchmark tools for Autonomous Driving tasks
-* [**Conditional Imitation-Learning**](https://github.com/felipecode/coiltraine): Training and testing Conditional Imitation Learning models in CARLA
-* [**AutoWare AV stack**](https://github.com/carla-simulator/carla-autoware): Bridge to connect AutoWare AV stack to CARLA
-* [**Reinforcement-Learning**](https://github.com/carla-simulator/reinforcement-learning): Code for running Conditional Reinforcement Learning models in CARLA
-* [**RoadRunner**](https://www.mathworks.com/products/roadrunner.html): MATLAB GUI based application to create road networks in the ASAM OpenDRIVE format
-* [**Map Editor**](https://github.com/carla-simulator/carla-map-editor): Standalone GUI application to enhance RoadRunner maps with traffic lights and traffic signs information
-
-
-**Like what you see? Star us on GitHub to support the project!**
-
-Paper
------
-
-If you use CARLA, please cite our CoRL’17 paper.
-
-_CARLA: An Open Urban Driving Simulator_<br>Alexey Dosovitskiy, German Ros,
-Felipe Codevilla, Antonio Lopez, Vladlen Koltun; PMLR 78:1-16
-[[PDF](http://proceedings.mlr.press/v78/dosovitskiy17a/dosovitskiy17a.pdf)]
-[[talk](https://www.youtube.com/watch?v=xfyK03MEZ9Q&feature=youtu.be&t=2h44m30s)]
-
-
+If you use this code in your research, please cite our paper:
 ```
-@inproceedings{Dosovitskiy17,
-  title = {{CARLA}: {An} Open Urban Driving Simulator},
-  author = {Alexey Dosovitskiy and German Ros and Felipe Codevilla and Antonio Lopez and Vladlen Koltun},
-  booktitle = {Proceedings of the 1st Annual Conference on Robot Learning},
-  pages = {1--16},
-  year = {2017}
+@article{priest2025auditory,
+  title={Auditory Perception In Open-Source Driving Simulator CARLA},
+  author={Priest, Erik and Cassity, Alyssa and Kang, Nina and Tao, Jian},
+  year={2025}
 }
 ```
 
-Building CARLA
---------------
+## License
 
-Clone this repository locally from GitHub:
+- [MIT License](LICENSE)
+- Ambulance Files under TEMP-CONTENT/Ambulance are distrubted under the CC-BY License
 
-```sh
-git clone https://github.com/carla-simulator/carla.git .
-```
+## Contact
 
-Also, clone the [CARLA fork of the Unreal Engine](https://github.com/CarlaUnreal/UnrealEngine) into an appropriate location:
-
-```sh
-git clone --depth 1 -b carla https://github.com/CarlaUnreal/UnrealEngine.git .
-```
-
-Once you have cloned the repositories, follow the instructions for [building in Linux][buildlinuxlink] or [building in Windows][buildwindowslink].
-
-[buildlinuxlink]: https://carla.readthedocs.io/en/latest/build_linux/
-[buildwindowslink]: https://carla.readthedocs.io/en/latest/build_windows/
-
-Contributing
-------------
-
-Please take a look at our [Contribution guidelines][contriblink].
-
-[contriblink]: https://carla.readthedocs.io/en/latest/cont_contribution_guidelines/
-
-F.A.Q.
-------
-
-If you run into problems, check our
-[FAQ](https://carla.readthedocs.io/en/latest/build_faq/).
-
-Licenses
--------
-
-#### CARLA licenses
-
-CARLA specific code is distributed under MIT License.
-
-CARLA specific assets are distributed under CC-BY License.
-
-#### CARLA Dependency and Integration licenses
-
-Unreal Engine 4 follows its [own license terms](https://www.unrealengine.com/en-US/faq).
-
-CARLA uses three dependencies as part of the SUMO integration:
-- [PROJ](https://proj.org/), a generic coordinate transformation software which uses the [X/MIT open source license](https://proj.org/about.html#license).
-- [SQLite](https://www.sqlite.org), part of the PROJ dependencies, which is [in the public domain](https://www.sqlite.org/purchase/license).
-- [Xerces-C](https://xerces.apache.org/xerces-c/), a validating XML parser, which is made available under the [Apache Software License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
-
-CARLA uses one dependency as part of the Chrono integration:
-- [Eigen](https://eigen.tuxfamily.org/index.php?title=Main_Page), a C++ template library for linear algebra which uses the [MPL2 license](https://www.mozilla.org/en-US/MPL/2.0/).
-
-CARLA uses the Autodesk FBX SDK for converting FBX to OBJ in the import process of maps. This step is optional, and the SDK is located [here](https://www.autodesk.com/developer-network/platform-technologies/fbx-sdk-2020-0)
-
-This software contains Autodesk® FBX® code developed by Autodesk, Inc. Copyright 2020 Autodesk, Inc. All rights, reserved. Such code is provided "as is" and Autodesk, Inc. disclaims any and all warranties, whether express or implied, including without limitation the implied warranties of merchantability, fitness for a particular purpose or non-infringement of third party rights. In no event shall Autodesk, Inc. be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of such code."
+For questions or support, please open an issue on GitHub or contact the authors directly.
