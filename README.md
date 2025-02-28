@@ -22,6 +22,7 @@ This repository contains a proof-of-concept implementation for integrating real-
 - NumPy
 - SciPy
 - Ubuntu (tested on version 20.04)
+- [Pulse Audio](https://www.freedesktop.org/wiki/Software/PulseAudio/) for Linux 
 
 ## Installation
 
@@ -38,7 +39,8 @@ For installing our contributions:
 
 2. Install the required Python packages:
    ```
-   pip install -r carla-root/PythonAPI/examples/requirements.txt
+   pip install -r carla-root/PythonAPI/examples/requirements-audio.txt
+   (If issues arise with open3d regarding sklearn being deprecated, pip install scikit-learn is a sufficient fix)
    ```
    
 ## Usage
@@ -63,6 +65,9 @@ For installing our contributions:
    ```
    python ambulance-spawn.py
    ```
+## Potential Issue
+- If carla cannot be found when running python scripts, ensure that you have pip installed carla's .whl under carla-root/PythonAPI/carla/dist/
+
 
 ## Future Improvements
 
@@ -85,7 +90,7 @@ If you use this code in your research, please cite our paper:
 ## License
 
 - [MIT License](LICENSE)
-- Ambulance Files under TEMP-CONTENT/Ambulance are distrubted under the CC-BY License
+- Ambulance Files under TEMP-CONTENT/Ambulance are distrubted under the CC-BY License, original production of assets contributed to Carla development team. 
 
 ## Contact
 
