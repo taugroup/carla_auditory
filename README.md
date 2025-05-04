@@ -87,6 +87,20 @@ If you use this code in your research, please cite our paper:
 }
 ```
 
+
+Original code development of the Carla Open-Source Driving Simulator to be accreddited to the Carla Development Team 
+```
+@inproceedings{Dosovitskiy17,
+  title = {{CARLA}: {An} Open Urban Driving Simulator},
+  author = {Alexey Dosovitskiy and German Ros and Felipe Codevilla and Antonio Lopez and Vladlen Koltun},
+  booktitle = {Proceedings of the 1st Annual Conference on Robot Learning},
+  pages = {1--16},
+  year = {2017}
+}
+```
+Please refer to Carla's github page for further developments in the Carla project https://github.com/carla-simulator/carla
+
+
 ## License
 
 - [MIT License](LICENSE)
